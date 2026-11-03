@@ -35,7 +35,11 @@ import {
   X,
   RefreshCw,
 } from "lucide-react";
-import { JGitLabLogoMark, JGitLabSplashLoader } from "@/components/brand/JGitLabBrand";
+import {
+  JGitLabLogoMark,
+  JGitLabSplashLoader,
+  JGitLabWordmark,
+} from "@/components/brand/JGitLabBrand";
 
 interface NavItem {
   label: string;
@@ -224,25 +228,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div className="min-h-screen bg-[#06080D] text-[#F3F4F6] flex">
+    <div className="min-h-screen bg-transparent text-[#F8FAFC] flex">
       {/* Mobile Sidebar Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* Collapsible Sidebar */}
+      {/* Floating Cosmic Studio Sidebar Dock */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 bg-[#090C13] border-r border-white/[0.06] flex flex-col justify-between shrink-0 transition-all duration-200 ${
-          collapsed ? "w-[68px]" : "w-64"
+        className={`fixed lg:sticky lg:top-2.5 lg:my-2.5 lg:ml-2.5 lg:h-[calc(100vh-20px)] lg:rounded-2xl inset-y-0 left-0 z-50 bg-[#070B18]/92 backdrop-blur-2xl border-r lg:border border-white/[0.09] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col justify-between shrink-0 transition-all duration-200 overflow-visible ${
+          collapsed ? "w-[72px]" : "w-[264px]"
         } ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
+        {/* Top Infinity Gradient Accent Bar */}
+        <div className="h-[2px] w-full bg-gradient-to-r from-cyan-400 via-violet-500 to-orange-500 rounded-t-2xl shrink-0" />
+
         <div className="flex flex-col min-h-0 flex-1">
           {/* Top Brand + Collapse Control */}
           <div
-            className={`h-14 border-b border-white/[0.06] flex items-center shrink-0 ${
+            className={`h-16 border-b border-white/[0.07] flex items-center shrink-0 ${
               collapsed ? "justify-center px-2" : "justify-between px-3.5"
             }`}
           >
@@ -251,15 +258,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 type="button"
                 onClick={toggleCollapse}
                 aria-label="Expand sidebar"
-                title="Expand JGitLab sidebar"
-                className="group relative w-9 h-9 rounded-lg overflow-hidden bg-[#131926] border border-violet-500/40 flex items-center justify-center shadow-[0_0_14px_rgba(139,92,246,0.28)] transition-all"
+                title="Expand JGitLab Studio"
+                className="group relative w-10 h-10 rounded-xl overflow-hidden bg-[#10172E] border border-cyan-400/40 flex items-center justify-center shadow-[0_0_18px_rgba(6,182,212,0.3)] transition-all"
               >
                 <img
                   src="/jgitlab-logo.jpg"
                   alt="JGitLab"
                   className="w-full h-full object-cover group-hover:opacity-20 transition-opacity"
                 />
-                <PanelLeftOpen className="w-4 h-4 hidden group-hover:block text-violet-200 absolute" />
+                <PanelLeftOpen className="w-4 h-4 hidden group-hover:block text-cyan-200 absolute" />
               </button>
             ) : (
               <>
@@ -272,25 +279,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     handleJGitLabRefresh();
                   }}
                   className="flex items-center gap-2.5 min-w-0 text-left group"
-                  title="JGitLab — Click to refresh workspace"
+                  title="JGitLab — Click to refresh studio"
                 >
                   <JGitLabLogoMark
                     size="md"
-                    className={isRefreshingWorkspace ? "animate-spin" : "group-hover:scale-105 transition-transform"}
+                    className={
+                      isRefreshingWorkspace
+                        ? "animate-spin"
+                        : "group-hover:scale-105 transition-transform"
+                    }
                   />
                   <div className="truncate">
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-sm tracking-tight bg-gradient-to-r from-cyan-400 via-violet-300 to-orange-400 bg-clip-text text-transparent">
-                        JGitLab
-                      </span>
+                      <JGitLabWordmark size="md" showBrackets={false} />
                       <RefreshCw
                         className={`w-3 h-3 text-gray-500 group-hover:text-cyan-400 transition-colors ${
                           isRefreshingWorkspace ? "animate-spin text-cyan-400" : ""
                         }`}
                       />
                     </div>
-                    <span className="text-[10px] text-gray-500 font-mono tracking-wider block">
-                      AI ENGINEERING
+                    <span className="text-[10px] text-cyan-400/80 font-mono tracking-widest block">
+                      &lt;AI STUDIO OS /&gt;
                     </span>
                   </div>
                 </button>
@@ -300,7 +309,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   onClick={toggleCollapse}
                   aria-label="Collapse sidebar"
                   title="Collapse sidebar"
-                  className="hidden lg:flex p-1.5 rounded-md text-gray-500 hover:text-gray-300 hover:bg-white/[0.04] transition-colors shrink-0"
+                  className="hidden lg:flex p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/[0.06] transition-colors shrink-0"
                 >
                   <PanelLeftClose className="w-4 h-4" />
                 </button>
@@ -310,7 +319,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button
               type="button"
               onClick={() => setMobileMenuOpen(false)}
-              className="lg:hidden p-1.5 rounded-md text-gray-400 hover:text-white"
+              className="lg:hidden p-1.5 rounded-lg text-gray-400 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -413,29 +422,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         href={item.href}
                         onClick={() => setMobileMenuOpen(false)}
                         title={collapsed ? item.label : undefined}
-                        className={`flex items-center justify-between rounded-md text-xs font-medium transition-colors ${
-                          collapsed ? "p-2.5 justify-center" : "px-2.5 py-2"
+                        className={`relative flex items-center justify-between rounded-xl text-xs font-medium transition-all ${
+                          collapsed ? "p-2.5 justify-center" : "px-3 py-2"
                         } ${
                           isActive
-                            ? "bg-violet-500/[0.12] text-white border border-violet-500/30"
-                            : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.04] border border-transparent"
+                            ? "bg-gradient-to-r from-cyan-500/[0.15] via-violet-500/[0.14] to-orange-500/[0.08] text-white border border-cyan-400/30 shadow-[0_0_20px_rgba(139,92,246,0.18)]"
+                            : "text-gray-400 hover:text-white hover:bg-white/[0.05] border border-transparent"
                         }`}
                       >
+                        {isActive && !collapsed && (
+                          <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-gradient-to-b from-cyan-400 via-violet-500 to-orange-500" />
+                        )}
                         <div className="flex items-center gap-2.5 min-w-0">
                           <Icon
                             className={`w-4 h-4 shrink-0 ${
-                              isActive ? "text-violet-400" : "text-gray-400"
+                              isActive ? "text-cyan-400" : "text-gray-400"
                             }`}
                           />
                           {!collapsed && <span className="truncate">{item.label}</span>}
                         </div>
                         {!collapsed && item.badge && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-300 border border-orange-500/30">
                             {item.badge}
                           </span>
                         )}
                         {!collapsed && item.highlight && !item.badge && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
                         )}
                       </Link>
                     );
@@ -542,8 +554,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar with Breadcrumbs, Global Search, Notifications, Status Pills */}
-        <header className="h-14 border-b border-white/[0.06] bg-[#090C13]/90 backdrop-blur px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0 sticky top-0 z-30">
+        {/* Floating Studio Top Command HUD */}
+        <header className="h-16 lg:mt-2.5 lg:mx-3 lg:rounded-2xl border-b lg:border border-white/[0.09] bg-[#070B18]/85 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between gap-4 shrink-0 sticky top-0 lg:top-2.5 z-30 shadow-[0_12px_32px_rgba(0,0,0,0.55)]">
           {/* Left: Mobile toggle + Desktop expand toggle (when collapsed) + Breadcrumbs */}
           <div className="flex items-center gap-2.5 min-w-0">
             <button
@@ -697,16 +709,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Primary Action */}
             <Link
               href="/engineer"
-              className="h-8 px-3 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium flex items-center gap-1.5 transition-colors shadow-sm"
+              className="h-9 px-3.5 rounded-xl jgitlab-btn-glow text-white text-xs font-semibold flex items-center gap-1.5"
             >
               <Bot className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Start Task</span>
+              <span className="hidden sm:inline">Start AI Task</span>
             </Link>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-5 sm:p-7 overflow-y-auto max-w-[1440px] w-full mx-auto">
+        <main className="flex-1 p-5 sm:p-7 overflow-y-auto max-w-[1460px] w-full mx-auto">
           {children}
         </main>
       </div>

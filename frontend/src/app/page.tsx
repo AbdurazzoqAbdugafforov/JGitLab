@@ -4,7 +4,11 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-import { JGitLabLogoMark, JGitLabSplashLoader } from "@/components/brand/JGitLabBrand";
+import {
+  JGitLabLogoMark,
+  JGitLabSplashLoader,
+  JGitLabWordmark,
+} from "@/components/brand/JGitLabBrand";
 import {
   Terminal,
   ShieldCheck,
@@ -114,16 +118,15 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#06080D] bg-hero-glow text-[#F3F4F6] flex flex-col justify-between selection:bg-violet-600 selection:text-white">
       {/* Top Navigation */}
-      <header className="border-b border-white/[0.07] bg-[#06080D]/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-white/[0.08] bg-[#04060E]/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="h-[2px] w-full bg-gradient-to-r from-cyan-400 via-violet-500 to-orange-500" />
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <JGitLabLogoMark size="md" />
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-violet-300 to-orange-400 bg-clip-text text-transparent">
-                JGitLab
-              </span>
-              <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/25 font-mono uppercase tracking-wider">
-                AI Engineering Platform
+            <div className="flex items-center gap-2.5">
+              <JGitLabWordmark size="lg" showBrackets />
+              <span className="hidden sm:inline-block text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-mono uppercase tracking-wider">
+                AI Studio v2.5
               </span>
             </div>
           </div>
@@ -162,7 +165,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/register"
-              className="h-9 px-4 text-xs sm:text-sm font-semibold rounded-lg bg-violet-600 hover:bg-violet-500 text-white flex items-center gap-1.5 transition-all shadow-[0_0_24px_rgba(139,92,246,0.35)]"
+              className="h-9 px-4 text-xs sm:text-sm font-semibold rounded-xl jgitlab-btn-glow text-white flex items-center gap-1.5"
             >
               <span>Get Started</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -197,9 +200,9 @@ export default function HomePage() {
             <div className="pt-2 flex flex-wrap items-center gap-3.5">
               <Link
                 href="/register"
-                className="h-11 px-6 text-sm font-semibold rounded-xl bg-violet-600 hover:bg-violet-500 text-white transition-all shadow-[0_0_28px_rgba(139,92,246,0.4)] flex items-center gap-2"
+                className="h-12 px-6 text-sm font-semibold rounded-xl jgitlab-btn-glow text-white flex items-center gap-2"
               >
-                <span>Launch Engineering Workspace</span>
+                <span>Launch JGitLab Studio</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
@@ -207,7 +210,7 @@ export default function HomePage() {
                 type="button"
                 onClick={handleInstantDemo}
                 disabled={demoSigningIn}
-                className="h-11 px-5 text-sm font-medium rounded-xl bg-[#0E131F] hover:bg-[#151C2E] text-gray-200 border border-white/[0.1] flex items-center gap-2 transition-all"
+                className="h-12 px-5 text-sm font-medium rounded-xl bg-[#0B1022] hover:bg-[#121A36] text-gray-200 border border-cyan-400/30 flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(6,182,212,0.15)]"
               >
                 {demoSigningIn ? (
                   <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />

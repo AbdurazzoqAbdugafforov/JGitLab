@@ -5,7 +5,7 @@ import Link from "next/link";
 import { api, getOAuthStartUrl } from "@/lib/api";
 import { AuthProvidersStatus } from "@/lib/types";
 import { Loader2, KeyRound, X, Sparkles, CheckCircle2 } from "lucide-react";
-import { JGitLabLogoMark } from "@/components/brand/JGitLabBrand";
+import { JGitLabLogoMark, JGitLabWordmark } from "@/components/brand/JGitLabBrand";
 
 export function GoogleLogo({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -281,43 +281,50 @@ export function OAuthSetupModal({
 
 export function AuthSplitShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#06080D] text-[#F3F4F6] grid grid-cols-1 lg:grid-cols-12 selection:bg-violet-500/30">
+    <div className="min-h-screen bg-[#04060E] bg-hero-glow text-[#F8FAFC] grid grid-cols-1 lg:grid-cols-12 selection:bg-violet-500/30">
       {/* LEFT SECTION — Brand identity, headline, positioning, and engineering architecture visual */}
-      <div className="hidden lg:flex lg:col-span-7 relative flex-col justify-between p-12 xl:p-16 border-r border-white/[0.06] bg-[#080B12] overflow-hidden">
+      <div className="hidden lg:flex lg:col-span-7 relative flex-col justify-between p-12 xl:p-16 border-r border-white/[0.08] bg-[#060916]/80 backdrop-blur-xl overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-violet-500 to-orange-500" />
         {/* Subtle grid background */}
         <div className="absolute inset-0 bg-engineering-grid opacity-60 pointer-events-none" />
         <div
-          className="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full pointer-events-none"
+          className="absolute -top-40 -left-40 w-[560px] h-[560px] rounded-full pointer-events-none"
           style={{
-            background: "radial-gradient(circle, rgba(139,92,246,0.09) 0%, rgba(6,182,212,0.03) 45%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(6,182,212,0.12) 0%, rgba(139,92,246,0.08) 45%, transparent 70%)",
           }}
         />
 
         {/* Brand Header */}
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <JGitLabLogoMark size="md" />
-            <span className="font-bold tracking-tight bg-gradient-to-r from-cyan-400 via-violet-300 to-orange-400 bg-clip-text text-transparent text-base">
-              JGitLab
+            <JGitLabWordmark size="lg" showBrackets />
+            <span className="text-[11px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+              AI Studio OS
             </span>
-            <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-white/[0.04] text-gray-400 border border-white/[0.06]">
-              AI Engineering Platform
-            </span>
-          </div>
-          <span className="text-xs font-mono text-gray-500">v2.4 · API-First Runtime</span>
+          </Link>
+          <span className="text-xs font-mono text-gray-400">v2.5 · API-First Runtime</span>
         </div>
 
         {/* Center Headline + Abstract Engineering Network Visualization */}
         <div className="relative z-10 max-w-xl my-auto py-8">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-violet-500/[0.08] border border-violet-500/20 text-violet-300 text-xs font-medium mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            Autonomous Software Engineering Infrastructure
+          <div className="flex items-center gap-4 mb-6">
+            <JGitLabLogoMark size="xl" />
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/[0.12] border border-violet-500/30 text-violet-200 text-xs font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                Autonomous Software Engineering Infrastructure
+              </div>
+              <p className="text-xs font-mono text-orange-300/90 mt-1.5">
+                &lt;Plan · Sandbox · Test · Diff · Pull Request /&gt;
+              </p>
+            </div>
           </div>
 
-          <h1 className="text-3xl xl:text-4xl font-semibold tracking-tight text-white leading-[1.18]">
+          <h1 className="text-3xl xl:text-4xl font-extrabold tracking-tight text-white leading-[1.16]">
             Your next engineering breakthrough starts here.
           </h1>
-          <p className="mt-4 text-base text-gray-400 leading-relaxed">
+          <p className="mt-3.5 text-base text-gray-300 leading-relaxed">
             Build, understand, and evolve software with an intelligent engineering platform.
           </p>
 
@@ -423,18 +430,18 @@ export function AuthSplitShell({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* RIGHT SECTION — Authentication Panel */}
-      <div className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-10 xl:p-14 bg-[#06080D]">
+      <div className="lg:col-span-5 flex flex-col justify-between p-6 sm:p-10 xl:p-12 bg-transparent">
         <div className="flex items-center justify-between lg:hidden mb-6">
           <div className="flex items-center gap-2.5">
             <JGitLabLogoMark size="sm" />
-            <span className="font-bold bg-gradient-to-r from-cyan-400 via-violet-300 to-orange-400 bg-clip-text text-transparent text-sm">
-              JGitLab
-            </span>
+            <JGitLabWordmark size="md" showBrackets />
           </div>
-          <span className="text-[11px] font-mono text-gray-500">AI Engineering Platform</span>
+          <span className="text-[11px] font-mono text-gray-400">AI Studio OS</span>
         </div>
 
-        <div className="w-full max-w-[390px] mx-auto my-auto">{children}</div>
+        <div className="w-full max-w-[420px] mx-auto my-auto studio-panel rounded-2xl p-6 sm:p-8">
+          {children}
+        </div>
 
         <div className="mt-8 pt-6 border-t border-white/[0.05] flex items-center justify-between text-[11px] text-gray-500 max-w-[390px] w-full mx-auto">
           <span>© {new Date().getFullYear()} JGitLab Inc.</span>
