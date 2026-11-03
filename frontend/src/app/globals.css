@@ -88,6 +88,29 @@ pre, code {
   border-radius: var(--radius-md);
 }
 
+.bg-hero-glow {
+  background:
+    radial-gradient(600px circle at 18% 12%, rgba(139, 92, 246, 0.11), transparent 60%),
+    radial-gradient(520px circle at 82% 18%, rgba(6, 182, 212, 0.08), transparent 60%),
+    radial-gradient(480px circle at 50% 90%, rgba(249, 115, 22, 0.05), transparent 65%);
+}
+
+.card-interactive {
+  background: linear-gradient(180deg, rgba(16, 22, 35, 0.92) 0%, rgba(11, 15, 24, 0.96) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.65);
+  transition: border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.card-interactive:hover {
+  border-color: rgba(139, 92, 246, 0.35);
+  box-shadow: 0 14px 36px -14px rgba(139, 92, 246, 0.16);
+}
+
+button, a, [role="button"] {
+  cursor: pointer;
+}
+
 .diff-add {
   background-color: rgba(34, 197, 94, 0.14);
   color: #86EFAC;

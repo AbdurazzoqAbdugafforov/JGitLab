@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import {
@@ -25,16 +26,19 @@ import {
   Sliders,
   Compass,
   Code2,
+  Sparkles,
 } from "lucide-react";
 
 export default function DashboardOverviewPage() {
   const { user, activeProject, projects } = useAuth();
+  const router = useRouter();
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [memories, setMemories] = useState<MemoryRecord[]>([]);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [ghStatus, setGhStatus] = useState<GitHubConnectionStatus | null>(null);
   const [providers, setProviders] = useState<AIProviderConfig[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quickPrompt, setQuickPrompt] = useState("");
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -83,38 +87,92 @@ export default function DashboardOverviewPage() {
 
   const showOnboardingCard = !user?.onboarding?.dismissed;
 
+  const handleQuickLaunch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickPrompt.trim()) {
+      router.push("/engineer");
+      return;
+    }
+    router.push(`/engineer?prompt=${encodeURIComponent(quickPrompt.trim())}`);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header & Primary Action */}
-      <div className="p-6 rounded-lg bg-[#0D111A] border border-white/[0.07] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-mono text-gray-400 mb-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span>WORKSPACE OVERVIEW</span>
-            {activeProject && (
-              <>
-                <span>·</span>
-                <span className="text-violet-300">{activeProject.name}</span>
-              </>
-            )}
+      {/* Hero Command Card + Quick-Launch Autonomous Prompt Bar */}
+      <div className="p-6 rounded-xl bg-gradient-to-br from-[#0F1523] via-[#0B0F19] to-[#0E1320] border border-white/[0.09] shadow-2xl space-y-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-mono text-gray-400 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>AUTONOMOUS COMMAND CENTER</span>
+              {activeProject && (
+                <>
+                  <span>·</span>
+                  <span className="text-violet-300 font-semibold">{activeProject.name}</span>
+                </>
+              )}
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              {activeProject ? activeProject.name : "Engineering Workspace"}
+            </h1>
+            <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-2xl">
+              {activeProject?.description ||
+                "Plan, execute, test, and review code changes across your connected GitHub repositories."}
+            </p>
           </div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
-            {activeProject ? activeProject.name : "Engineering Workspace"}
-          </h1>
-          <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-2xl">
-            {activeProject?.description ||
-              "Plan, execute, test, and review code changes across your connected GitHub repositories."}
-          </p>
+
+          <Link
+            href="/engineer"
+            className="h-10 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(139,92,246,0.35)] shrink-0"
+          >
+            <Bot className="w-4 h-4" />
+            <span>Start an AI Engineering Task</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
 
-        <Link
-          href="/engineer"
-          className="h-10 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs sm:text-sm font-medium flex items-center gap-2 transition-colors shadow-sm shrink-0"
+        {/* Interactive Prompt Launcher */}
+        <form
+          onSubmit={handleQuickLaunch}
+          className="p-2 rounded-xl bg-[#070A10]/90 border border-white/[0.09] focus-within:border-violet-500/60 transition-colors flex flex-col sm:flex-row items-stretch sm:items-center gap-2"
         >
-          <Bot className="w-4 h-4" />
-          <span>Start an AI Engineering Task</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
+          <div className="flex items-center gap-2.5 px-3 py-1.5 flex-1">
+            <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+            <input
+              type="text"
+              value={quickPrompt}
+              onChange={(e) => setQuickPrompt(e.target.value)}
+              placeholder="Ask JGitLab AI Engineer to build a feature, fix a bug, or write unit tests..."
+              className="w-full bg-transparent text-xs sm:text-sm text-white placeholder:text-gray-500 focus:outline-none font-mono"
+            />
+          </div>
+          <button
+            type="submit"
+            className="h-9 px-4 rounded-lg bg-[#161E31] hover:bg-violet-600 text-violet-200 hover:text-white border border-violet-500/30 text-xs font-medium flex items-center justify-center gap-1.5 transition-all shrink-0"
+          >
+            <span>Synthesize Plan</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </form>
+
+        {/* Quick Prompt Suggestions */}
+        <div className="flex items-center gap-2 flex-wrap text-[11px]">
+          <span className="font-mono text-gray-500 uppercase">Quick tasks:</span>
+          {[
+            "Add Redis sliding-window rate limiter to API",
+            "Write unit test suite for OAuth callback flow",
+            "Implement healthcheck endpoint with DB latency telemetry",
+          ].map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => router.push(`/engineer?prompt=${encodeURIComponent(preset)}`)}
+              className="px-2.5 py-1 rounded-md bg-white/[0.03] hover:bg-violet-500/15 border border-white/[0.07] hover:border-violet-500/30 text-gray-300 hover:text-violet-200 font-mono transition-colors"
+            >
+              {preset} →
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Guided Onboarding Banner for New Users */}
@@ -143,7 +201,7 @@ export default function DashboardOverviewPage() {
 
       {/* Real Workspace Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
+        <div className="card-interactive p-4 rounded-xl">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono text-gray-400 uppercase">
               Active Projects
@@ -166,7 +224,7 @@ export default function DashboardOverviewPage() {
           </Link>
         </div>
 
-        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
+        <div className="card-interactive p-4 rounded-xl">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono text-gray-400 uppercase">
               Agent Tasks
@@ -196,7 +254,7 @@ export default function DashboardOverviewPage() {
           </Link>
         </div>
 
-        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
+        <div className="card-interactive p-4 rounded-xl">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono text-gray-400 uppercase">
               GitHub Integration
@@ -224,7 +282,7 @@ export default function DashboardOverviewPage() {
           </Link>
         </div>
 
-        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
+        <div className="card-interactive p-4 rounded-xl">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono text-gray-400 uppercase">
               AI API Provider

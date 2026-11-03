@@ -45,6 +45,19 @@ export default function AIEngineerPage() {
   const [liveSteps, setLiveSteps] = useState<AgentTaskStep[]>([]);
   const [liveLogs, setLiveLogs] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const promptParam = params.get("prompt");
+      if (promptParam) {
+        setTaskTitle(promptParam);
+        setTaskDescription(
+          `Implement: ${promptParam}. Follow clean architecture, preserve existing tests, and verify execution in the isolated sandbox.`
+        );
+      }
+    }
+  }, []);
+
   // WebSocket for live execution updates
   const { isConnected } = useTaskWebSocket(activeTask?.id || null, (evt: WSEvent) => {
     if (evt.type === "log") {
@@ -186,6 +199,54 @@ export default function AIEngineerPage() {
             </span>
           </div>
         )}
+      </div>
+
+      {/* Autonomous Pipeline Progress Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-2.5 rounded-xl bg-[#0B0F19] border border-white/[0.08]">
+        {[
+          { step: "01", label: "Task Spec", active: !activeTask || Boolean(taskTitle) },
+          {
+            step: "02",
+            label: "AI Plan Synthesis",
+            active: isPlanning || Boolean(planData) || Boolean(activeTask),
+          },
+          {
+            step: "03",
+            label: "Human Approval",
+            active:
+              activeTask?.status === "awaiting_approval" ||
+              activeTask?.status === "running" ||
+              activeTask?.status === "completed",
+          },
+          {
+            step: "04",
+            label: "Sandbox Execution",
+            active: activeTask?.status === "running" || activeTask?.status === "completed",
+          },
+          {
+            step: "05",
+            label: "Verified Diff & PR",
+            active: activeTask?.status === "completed",
+          },
+        ].map((stage) => (
+          <div
+            key={stage.step}
+            className={`px-3 py-2 rounded-lg border text-xs flex items-center gap-2 transition-colors ${
+              stage.active
+                ? "bg-violet-500/[0.1] border-violet-500/35 text-white"
+                : "bg-[#070A10] border-white/[0.05] text-gray-500"
+            }`}
+          >
+            <span
+              className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${
+                stage.active ? "bg-violet-600 text-white" : "bg-white/[0.05] text-gray-500"
+              }`}
+            >
+              {stage.step}
+            </span>
+            <span className="font-medium truncate">{stage.label}</span>
+          </div>
+        ))}
       </div>
 
       {error && (

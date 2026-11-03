@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { Project } from "@/lib/types";
@@ -8,21 +9,22 @@ import {
   FolderGit2,
   Plus,
   Trash2,
-  CheckCircle2,
   ExternalLink,
   Bot,
   Brain,
-  Layers,
-  Sparkles,
   GitBranch,
-  X
+  X,
+  Search,
+  FolderTree,
 } from "lucide-react";
 
 export default function ProjectsPage() {
   const { activeProject, setActiveProject, refreshProjects } = useAuth();
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // New Project Form State
   const [name, setName] = useState("");
@@ -104,13 +106,25 @@ export default function ProjectsPage() {
             Manage your autonomous engineering workspaces, isolated repositories, and architecture memory banks.
           </p>
         </div>
-        <button
-          onClick={() => setIsCreating(true)}
-          className="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-glow transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          <span>New Project</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search projects..."
+              className="h-9 pl-8 pr-3 rounded-lg bg-[#0B0F19] border border-white/[0.09] text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-violet-500/60"
+            />
+          </div>
+          <button
+            onClick={() => setIsCreating(true)}
+            className="h-9 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-glow transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Project</span>
+          </button>
+        </div>
       </div>
 
       {/* Modal: Create Project */}
@@ -202,81 +216,128 @@ export default function ProjectsPage() {
 
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {projects.map((proj) => {
-          const isActive = activeProject?.id === proj.id;
-          return (
-            <div
-              key={proj.id}
-              onClick={() => setActiveProject(proj)}
-              className={`p-5 rounded-2xl bg-charcoal-900 border transition-all cursor-pointer flex flex-col justify-between relative group ${
-                isActive
-                  ? "border-violet-500/60 shadow-glow bg-gradient-to-b from-charcoal-900 to-charcoal-850"
-                  : "border-border hover:border-gray-700"
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        isActive ? "bg-emerald-400 shadow-glow" : "bg-gray-600"
-                      }`}
-                    />
-                    <span className="text-[10px] font-mono uppercase text-muted">
-                      {isActive ? "Active Workspace" : "Workspace"}
-                    </span>
-                  </div>
-                  <button
-                    onClick={(e) => handleDeleteProject(proj.id, e)}
-                    title="Delete project"
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-charcoal-800 text-muted hover:text-red-400 transition-opacity"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <h3 className="font-bold text-base text-white tracking-tight mb-1">{proj.name}</h3>
-                <p className="text-xs text-muted line-clamp-2 mb-4 leading-relaxed">
-                  {proj.description || "No description provided."}
-                </p>
-
-                {/* Tech stack pills */}
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {proj.tech_stack && proj.tech_stack.length > 0 ? (
-                    proj.tech_stack.map((tech) => (
+        {projects
+          .filter(
+            (p) =>
+              !searchQuery.trim() ||
+              p.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+              (p.description || "").toLowerCase().includes(searchQuery.trim().toLowerCase())
+          )
+          .map((proj) => {
+            const isActive = activeProject?.id === proj.id;
+            return (
+              <div
+                key={proj.id}
+                onClick={() => setActiveProject(proj)}
+                className={`card-interactive p-5 rounded-2xl cursor-pointer flex flex-col justify-between relative group ${
+                  isActive ? "!border-violet-500/60 shadow-[0_0_24px_rgba(139,92,246,0.2)]" : ""
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
                       <span
-                        key={tech}
-                        className="px-2 py-0.5 rounded bg-charcoal-850 text-[10px] font-mono text-gray-300 border border-border"
-                      >
-                        {tech}
+                        className={`w-2 h-2 rounded-full ${
+                          isActive ? "bg-emerald-400 animate-pulse" : "bg-gray-600"
+                        }`}
+                      />
+                      <span className="text-[10px] font-mono uppercase text-gray-400">
+                        {isActive ? "Active Workspace" : "Click to Activate"}
                       </span>
-                    ))
-                  ) : (
-                    <span className="text-[10px] text-muted font-mono">No stack tags</span>
-                  )}
+                    </div>
+                    <button
+                      onClick={(e) => handleDeleteProject(proj.id, e)}
+                      title="Delete project"
+                      className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-white/[0.06] text-gray-500 hover:text-red-400 transition-opacity"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  <h3 className="font-bold text-base text-white tracking-tight mb-1">{proj.name}</h3>
+                  <p className="text-xs text-gray-400 line-clamp-2 mb-4 leading-relaxed">
+                    {proj.description || "No description provided."}
+                  </p>
+
+                  {/* Tech stack pills */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {proj.tech_stack && proj.tech_stack.length > 0 ? (
+                      proj.tech_stack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="px-2 py-0.5 rounded bg-white/[0.04] text-[10px] font-mono text-gray-300 border border-white/[0.07]"
+                        >
+                          {tech}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-[10px] text-gray-500 font-mono">No stack tags</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-3 border-t border-white/[0.07]">
+                  {/* 1-Click Tool Shortcuts */}
+                  <div className="grid grid-cols-3 gap-1.5 text-[11px] font-medium">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveProject(proj);
+                        router.push("/engineer");
+                      }}
+                      className="py-1.5 px-2 rounded-md bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/25 flex items-center justify-center gap-1 transition-colors"
+                    >
+                      <Bot className="w-3 h-3" />
+                      <span>Engineer</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveProject(proj);
+                        router.push("/repository");
+                      }}
+                      className="py-1.5 px-2 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 border border-white/[0.06] flex items-center justify-center gap-1 transition-colors"
+                    >
+                      <FolderTree className="w-3 h-3 text-cyan-400" />
+                      <span>Repo</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveProject(proj);
+                        router.push("/memory");
+                      }}
+                      className="py-1.5 px-2 rounded-md bg-white/[0.04] hover:bg-white/[0.08] text-gray-300 border border-white/[0.06] flex items-center justify-center gap-1 transition-colors"
+                    >
+                      <Brain className="w-3 h-3 text-emerald-400" />
+                      <span>Memory</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-gray-400 font-mono">
+                    <span className="flex items-center gap-1">
+                      <GitBranch className="w-3 h-3 text-cyan-400" />
+                      <span>{proj.default_branch}</span>
+                    </span>
+                    {proj.git_repo_url && (
+                      <a
+                        href={proj.git_repo_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="hover:text-white flex items-center gap-1"
+                      >
+                        Repo <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-
-              <div className="pt-4 border-t border-border flex items-center justify-between text-xs text-muted font-mono">
-                <span className="flex items-center gap-1">
-                  <GitBranch className="w-3 h-3 text-cyan-400" />
-                  <span>{proj.default_branch}</span>
-                </span>
-                {proj.git_repo_url && (
-                  <a
-                    href={proj.git_repo_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="hover:text-white flex items-center gap-1"
-                  >
-                    Repo <ExternalLink className="w-3 h-3" />
-                  </a>
-                )}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     </div>
   );
