@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: jgitlab-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: jgitlab
+      POSTGRES_PASSWORD: jgitlab_secure_password_2026
+      POSTGRES_DB: jgitlab_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jgitlab -d jgitlab_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: jgitlab-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jgitlab-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://jgitlab:jgitlab_secure_password_2026@postgres:5432/jgitlab_db
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: jgitlab-production-super-secret-key-32chars
+      ENCRYPTION_KEY: cE1xWjRkTEpTYnF1Q2U0d1p5N3Y5SGFuYjJ1OTZtNnY=
+      WORKSPACE_STORAGE_DIR: /app/workspaces
+    volumes:
+      - workspace_data:/app/workspaces
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jgitlab-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_BACKEND_URL: http://backend:8000
+
+volumes:
+  postgres_data:
+  redis_data:
+  workspace_data:
