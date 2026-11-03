@@ -15,6 +15,7 @@ class Project(Base):
 
     id = Column(String(36), primary_key=True, default=gen_uuid)
     organization_id = Column(String(36), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
+    created_by_id = Column(String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     git_repo_url = Column(String(512), nullable=True)

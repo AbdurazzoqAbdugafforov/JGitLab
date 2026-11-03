@@ -38,7 +38,10 @@ export default function TasksWorkspacePage() {
   const [prError, setPrError] = useState<string | null>(null);
 
   const loadTasks = async () => {
-    if (!activeProject) return;
+    if (!activeProject) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await api.getTasks(activeProject.id);
@@ -276,7 +279,7 @@ export default function TasksWorkspacePage() {
                       <span>Unified Git Code Diff</span>
                     </span>
                     <span className="text-xs font-mono text-cyan-400">
-                      {diffData?.changed_files_count || 0} modified files
+                      {diffData?.changed_files?.length || 0} modified files
                     </span>
                   </div>
 

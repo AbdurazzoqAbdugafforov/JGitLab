@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
 import { AgentTask, StructuredPlan, AgentTaskStep, ExecutionLog } from "@/lib/types";
@@ -24,7 +25,7 @@ import {
 } from "lucide-react";
 
 export default function AIEngineerPage() {
-  const { activeProject } = useAuth();
+  const { activeProject, refreshProjects } = useAuth();
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "urgent">("medium");
@@ -88,10 +89,6 @@ export default function AIEngineerPage() {
 
   const handleCreateAndPlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeProject) {
-      setError("Please select or create an active project first.");
-      return;
-    }
     setError(null);
     setIsSubmitting(true);
     setPlanData(null);
@@ -99,9 +96,19 @@ export default function AIEngineerPage() {
     setLiveLogs([]);
 
     try {
+      let targetProjectId = activeProject?.id;
+      if (!targetProjectId) {
+        const createdProj = await api.createProject({
+          name: "JGitLab Engineering Core",
+          description: "Primary AI Software Engineering project workspace",
+        });
+        await refreshProjects();
+        targetProjectId = createdProj.id;
+      }
+
       // 1. Create task
       const task = await api.createTask({
-        project_id: activeProject.id,
+        project_id: targetProjectId,
         title: taskTitle,
         description: taskDescription,
         priority: priority,
@@ -182,12 +189,22 @@ export default function AIEngineerPage() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-sm flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <span className="font-semibold block mb-0.5">Execution Interrupted</span>
-            <span>{error}</span>
+        <div className="p-4 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 text-sm flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <span className="font-semibold block mb-0.5">Execution Interrupted</span>
+              <span>{error}</span>
+            </div>
           </div>
+          {error.toLowerCase().includes("provider") && (
+            <Link
+              href="/settings/providers"
+              className="shrink-0 px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium"
+            >
+              Configure AI Provider →
+            </Link>
+          )}
         </div>
       )}
 
@@ -250,7 +267,7 @@ export default function AIEngineerPage() {
 
               <button
                 type="submit"
-                disabled={isSubmitting || isPlanning || !activeProject}
+                disabled={isSubmitting || isPlanning}
                 className="w-full py-2.5 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-glow hover:shadow-violet-600/50"
               >
                 {isPlanning ? (

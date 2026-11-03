@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, ConfigDict
 class ProjectCreate(BaseModel):
     name: str = Field(min_length=2, max_length=100)
     description: Optional[str] = None
+    organization_id: Optional[str] = None
     git_repo_url: Optional[str] = None
     default_branch: str = "main"
     tech_stack: List[str] = []

@@ -1,12 +1,12 @@
 from typing import List, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 
 from app.core.database import get_db
 from app.models.activity import ActivityLog, Notification
 from app.schemas.activity import ActivityLogResponse, NotificationResponse
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_accessible_project_ids, verify_project_access
 from app.models.user import User
 
 router = APIRouter(prefix="/activity", tags=["Activity & Notifications"])
@@ -18,9 +18,17 @@ async def list_activity_logs(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
-    stmt = select(ActivityLog)
     if project_id:
-        stmt = stmt.where(ActivityLog.project_id == project_id)
+        await verify_project_access(project_id, db, current_user)
+        stmt = select(ActivityLog).where(ActivityLog.project_id == project_id)
+    else:
+        accessible_ids = await get_accessible_project_ids(db, current_user)
+        stmt = select(ActivityLog).where(
+            or_(
+                ActivityLog.user_id == current_user.id,
+                ActivityLog.project_id.in_(accessible_ids) if accessible_ids else False,
+            )
+        )
     stmt = stmt.order_by(ActivityLog.created_at.desc()).limit(limit)
     result = await db.execute(stmt)
     return result.scalars().all()

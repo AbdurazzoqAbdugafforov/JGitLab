@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { Cpu, Terminal, Shield, Sparkles, ArrowRight, GitBranch, Database } from "lucide-react";
+import { JGitLabLogoMark, JGitLabSplashLoader } from "@/components/brand/JGitLabBrand";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -17,11 +18,7 @@ export default function HomePage() {
   }, [user, loading, router]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-charcoal-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <JGitLabSplashLoader label="Loading JGitLab Platform..." fullScreen />;
   }
 
   return (
@@ -30,11 +27,11 @@ export default function HomePage() {
       <header className="border-b border-border bg-charcoal-900/60 backdrop-blur sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-violet-600 to-cyan-400 flex items-center justify-center text-white font-mono font-bold text-lg shadow-glow">
-              J
-            </div>
+            <JGitLabLogoMark size="lg" />
             <div>
-              <span className="font-bold text-lg tracking-tight text-white">JGitLab</span>
+              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-cyan-400 via-violet-300 to-orange-400 bg-clip-text text-transparent">
+                JGitLab
+              </span>
               <span className="text-xs ml-2 px-1.5 py-0.5 rounded bg-violet-950/80 text-violet-300 border border-violet-800/40 font-mono">
                 AI PLATFORM
               </span>

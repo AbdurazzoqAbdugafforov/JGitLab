@@ -14,7 +14,7 @@ from app.schemas.provider import (
 )
 from app.services.ai.openai_provider import OpenAICompatibleProvider
 from app.services.ai.base import AIProviderError
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, verify_project_access
 from app.models.user import User
 
 router = APIRouter(prefix="/providers", tags=["AI Providers"])
@@ -50,6 +50,8 @@ async def list_providers(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
+    if project_id:
+        await verify_project_access(project_id, db, current_user)
     stmt = select(AIProviderConfiguration).where(AIProviderConfiguration.user_id == current_user.id)
     if project_id:
         stmt = stmt.where(AIProviderConfiguration.project_id == project_id)
@@ -63,6 +65,8 @@ async def create_or_update_provider(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
+    if config_in.project_id:
+        await verify_project_access(config_in.project_id, db, current_user)
     encrypted_key = encrypt_secret(config_in.api_key)
 
     # Deactivate previous configs for this scope if setting active

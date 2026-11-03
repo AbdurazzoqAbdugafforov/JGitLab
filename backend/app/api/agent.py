@@ -25,7 +25,8 @@ from app.services.agent.executor import AgentExecutionEngine
 from app.services.agent.diff_engine import DiffEngine
 from app.services.memory.service import EngineeringMemoryService
 from app.services.github.client import GitHubClient
-from app.api.deps import get_current_user
+from app.api.github import _resolve_github_client_for_user
+from app.api.deps import get_current_user, verify_project_access
 from app.models.user import User
 
 router = APIRouter(prefix="/agent", tags=["AI Software Engineer"])
@@ -90,11 +91,7 @@ async def create_task(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
-    # Verify project exists
-    proj_res = await db.execute(select(Project).where(Project.id == task_in.project_id))
-    project = proj_res.scalar_one_or_none()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    project = await verify_project_access(task_in.project_id, db, current_user)
 
     task = AgentTask(
         project_id=task_in.project_id,
@@ -129,6 +126,7 @@ async def list_tasks(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
+    await verify_project_access(project_id, db, current_user)
     result = await db.execute(
         select(AgentTask).where(AgentTask.project_id == project_id).order_by(AgentTask.created_at.desc())
     )
@@ -144,6 +142,7 @@ async def get_task_detail(
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    await verify_project_access(task.project_id, db, current_user)
 
     steps_res = await db.execute(select(AgentTaskStep).where(AgentTaskStep.task_id == task_id).order_by(AgentTaskStep.step_index.asc()))
     approvals_res = await db.execute(select(AgentApproval).where(AgentApproval.task_id == task_id).order_by(AgentApproval.created_at.desc()))
@@ -165,12 +164,17 @@ async def generate_task_plan(
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    project = await verify_project_access(task.project_id, db, current_user)
 
-    provider = await get_ai_provider_for_project(task.project_id, current_user.id, db)
+    try:
+        provider = await get_ai_provider_for_project(task.project_id, current_user.id, db)
+    except Exception as e:
+        task.status = "failed"
+        task.failure_analysis = str(e)
+        await db.commit()
+        raise HTTPException(status_code=400, detail=str(e))
 
-    # Fetch project & repo context
-    proj_res = await db.execute(select(Project).where(Project.id == task.project_id))
-    project = proj_res.scalar_one_or_none()
+    # Fetch repo context
     repo_res = await db.execute(select(Repository).where(Repository.project_id == task.project_id))
     repo = repo_res.scalar_one_or_none()
 
@@ -255,6 +259,7 @@ async def approve_task_plan(
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    await verify_project_access(task.project_id, db, current_user)
 
     # Find pending approval
     app_res = await db.execute(
@@ -299,6 +304,7 @@ async def get_task_diff(
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
+    await verify_project_access(task.project_id, db, current_user)
 
     ws_path = os.path.join(settings.WORKSPACE_STORAGE_DIR, f"task_{task_id}")
     if not os.path.exists(ws_path):
@@ -319,19 +325,14 @@ async def prepare_pull_request(
     task = result.scalar_one_or_none()
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-
-    conn_res = await db.execute(select(GitHubConnection).where(GitHubConnection.user_id == current_user.id))
-    conn = conn_res.scalar_one_or_none()
-    if not conn:
-        raise HTTPException(status_code=400, detail="GitHub must be connected to open a pull request.")
+    await verify_project_access(task.project_id, db, current_user)
 
     repo_res = await db.execute(select(Repository).where(Repository.project_id == task.project_id))
     repo = repo_res.scalar_one_or_none()
     if not repo:
         raise HTTPException(status_code=400, detail="No GitHub repository associated with this project.")
 
-    raw_token = decrypt_secret(conn.access_token_enc)
-    client = GitHubClient(raw_token)
+    client, _ = await _resolve_github_client_for_user(db, current_user, preferred_installation_id=repo.installation_id)
 
     branch_name = pr_req.head_branch or f"jgitlab/task-{task.id[:8]}"
 

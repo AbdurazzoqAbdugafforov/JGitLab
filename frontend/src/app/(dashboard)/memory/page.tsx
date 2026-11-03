@@ -44,7 +44,10 @@ export default function EngineeringMemoryPage() {
   const [error, setError] = useState<string | null>(null);
 
   const loadMemories = async () => {
-    if (!activeProject) return;
+    if (!activeProject) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const cat = selectedCategory === "all" ? undefined : selectedCategory;
@@ -86,7 +89,10 @@ export default function EngineeringMemoryPage() {
 
   const handleCreateMemory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeProject) return;
+    if (!activeProject) {
+      setError("Please select or create an active project first.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
 

@@ -26,7 +26,10 @@ export default function RepositoryExplorerPage() {
 
   useEffect(() => {
     async function loadAnalysis() {
-      if (!activeProject) return;
+      if (!activeProject) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const data = await api.getRepoAnalysis(activeProject.id);

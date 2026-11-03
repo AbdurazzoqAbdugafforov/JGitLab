@@ -4,44 +4,62 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { api } from "@/lib/api";
-import { AgentTask, MemoryRecord, ActivityLog } from "@/lib/types";
+import {
+  AgentTask,
+  MemoryRecord,
+  ActivityLog,
+  GitHubConnectionStatus,
+  AIProviderConfig,
+} from "@/lib/types";
 import {
   Bot,
   Terminal,
   Brain,
-  Cpu,
-  Layers,
   ArrowRight,
   CheckCircle2,
   Clock,
   AlertCircle,
-  FolderTree,
+  FolderGit2,
   GitPullRequest,
-  Sparkles
+  Github,
+  Sliders,
+  Compass,
+  Code2,
 } from "lucide-react";
 
 export default function DashboardOverviewPage() {
-  const { activeProject } = useAuth();
+  const { user, activeProject, projects } = useAuth();
   const [tasks, setTasks] = useState<AgentTask[]>([]);
   const [memories, setMemories] = useState<MemoryRecord[]>([]);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
+  const [ghStatus, setGhStatus] = useState<GitHubConnectionStatus | null>(null);
+  const [providers, setProviders] = useState<AIProviderConfig[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboardData() {
-      if (!activeProject) return;
       setLoading(true);
       try {
-        const [taskList, memList, actList] = await Promise.all([
-          api.getTasks(activeProject.id).catch(() => []),
-          api.getMemories(activeProject.id).catch(() => []),
-          api.getActivityLogs(activeProject.id).catch(() => []),
+        const [gh, provs, actList] = await Promise.all([
+          api.getGitHubStatus().catch(() => null),
+          api.getProviders().catch(() => []),
+          api.getActivityLogs(activeProject?.id).catch(() => []),
         ]);
-        setTasks(taskList);
-        setMemories(memList);
+        setGhStatus(gh);
+        setProviders(provs);
         setActivities(actList);
-      } catch (err) {
-        console.error("Dashboard data load error", err);
+
+        if (activeProject) {
+          const [taskList, memList] = await Promise.all([
+            api.getTasks(activeProject.id).catch(() => []),
+            api.getMemories(activeProject.id).catch(() => []),
+          ]);
+          setTasks(taskList);
+          setMemories(memList);
+        } else {
+          setTasks([]);
+          setMemories([]);
+        }
       } finally {
         setLoading(false);
       }
@@ -50,255 +68,425 @@ export default function DashboardOverviewPage() {
   }, [activeProject]);
 
   const completedTasks = tasks.filter((t) => t.status === "completed").length;
-  const runningTasks = tasks.filter((t) => t.status === "running" || t.status === "planning" || t.status === "awaiting_approval").length;
-  const totalTokens = tasks.reduce((sum, t) => sum + (t.total_tokens_used || 0), 0);
+  const runningTasks = tasks.filter(
+    (t) =>
+      t.status === "running" ||
+      t.status === "planning" ||
+      t.status === "awaiting_approval" ||
+      t.status === "testing"
+  ).length;
+  const connectedReposCount = projects.filter(
+    (p) => Boolean(p.git_repo_url) || Boolean(p.has_connected_repo)
+  ).length;
+  const tasksWithChanges = tasks.filter((t) => Boolean(t.diff_summary) || Boolean(t.pr_url));
+  const activeProvidersCount = providers.filter((p) => p.is_active).length;
+
+  const showOnboardingCard = !user?.onboarding?.dismissed;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Top Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-charcoal-900 via-charcoal-850 to-charcoal-900 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <div className="space-y-6">
+      {/* Header & Primary Action */}
+      <div className="p-6 rounded-lg bg-[#0D111A] border border-white/[0.07] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-950/80 border border-violet-800/40 text-violet-300 text-[11px] font-mono mb-2">
-            <Sparkles className="w-3 h-3 text-cyan-400" />
-            <span>Autonomous Software Engineer · Active Workspace</span>
+          <div className="flex items-center gap-2 text-xs font-mono text-gray-400 mb-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span>WORKSPACE OVERVIEW</span>
+            {activeProject && (
+              <>
+                <span>·</span>
+                <span className="text-violet-300">{activeProject.name}</span>
+              </>
+            )}
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            {activeProject ? activeProject.name : "Select a Project"}
+          <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+            {activeProject ? activeProject.name : "Engineering Workspace"}
           </h1>
-          <p className="text-sm text-muted mt-1 max-w-xl">
-            {activeProject?.description || "Build, inspect, and autonomously evolve your codebase with external AI APIs and isolated sandboxes."}
+          <p className="text-xs sm:text-sm text-gray-400 mt-1 max-w-2xl">
+            {activeProject?.description ||
+              "Plan, execute, test, and review code changes across your connected GitHub repositories."}
           </p>
         </div>
+
         <Link
           href="/engineer"
-          className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold flex items-center gap-2 shadow-glow transition-all shrink-0"
+          className="h-10 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs sm:text-sm font-medium flex items-center gap-2 transition-colors shadow-sm shrink-0"
         >
           <Bot className="w-4 h-4" />
-          <span>Launch AI Engineer</span>
+          <span>Start an AI Engineering Task</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
 
-      {/* Metrics Row */}
+      {/* Guided Onboarding Banner for New Users */}
+      {showOnboardingCard && (
+        <div className="p-4 sm:px-5 rounded-lg bg-[#101624] border border-violet-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <Compass className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+            <div>
+              <h2 className="text-xs sm:text-sm font-semibold text-white">
+                Complete your workspace setup
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Connect your GitHub App repository scope, configure an external AI provider key, and run your first engineering task.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/onboarding"
+            className="h-8 px-3.5 rounded-md bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/40 text-xs font-medium text-violet-200 inline-flex items-center gap-1.5 shrink-0"
+          >
+            <span>Open Setup Guide</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      )}
+
+      {/* Real Workspace Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Completed Tasks */}
-        <div className="p-5 rounded-xl bg-charcoal-900 border border-border">
+        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-muted uppercase">Completed Tasks</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-950/60 border border-emerald-800/40 flex items-center justify-center text-emerald-400">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white font-mono">{completedTasks}</span>
-            <span className="text-xs text-muted">tasks done</span>
-          </div>
-          <div className="mt-2 text-xs text-muted">
-            {runningTasks > 0 ? (
-              <span className="text-violet-400 font-medium">{runningTasks} in progress</span>
-            ) : (
-              "Ready for new tasks"
-            )}
-          </div>
-        </div>
-
-        {/* Tokens Monitored */}
-        <div className="p-5 rounded-xl bg-charcoal-900 border border-border">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-muted uppercase">Tokens Monitored</span>
-            <div className="w-7 h-7 rounded-lg bg-violet-950/60 border border-violet-800/40 flex items-center justify-center text-violet-400">
-              <Cpu className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white font-mono">
-              {totalTokens.toLocaleString()}
+            <span className="text-[11px] font-mono text-gray-400 uppercase">
+              Active Projects
             </span>
-            <span className="text-xs text-muted">tokens</span>
+            <FolderGit2 className="w-4 h-4 text-violet-400" />
           </div>
-          <div className="mt-2 text-xs text-muted">Tracked via external AI provider</div>
+          <div className="mt-2.5 flex items-baseline gap-2">
+            <span className="text-2xl font-semibold text-white font-mono">
+              {projects.length}
+            </span>
+            <span className="text-xs text-gray-500">
+              ({connectedReposCount} with repo)
+            </span>
+          </div>
+          <Link
+            href="/projects"
+            className="mt-2 inline-block text-[11px] text-violet-400 hover:text-violet-300 font-mono"
+          >
+            Manage projects →
+          </Link>
         </div>
 
-        {/* Engineering Memory Records */}
-        <div className="p-5 rounded-xl bg-charcoal-900 border border-border">
+        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-muted uppercase">Engineering Memories</span>
-            <div className="w-7 h-7 rounded-lg bg-cyan-950/60 border border-cyan-800/40 flex items-center justify-center text-cyan-400">
-              <Brain className="w-4 h-4" />
+            <span className="text-[11px] font-mono text-gray-400 uppercase">
+              Agent Tasks
+            </span>
+            <Terminal className="w-4 h-4 text-cyan-400" />
+          </div>
+          <div className="mt-2.5 flex items-baseline gap-3">
+            <div>
+              <span className="text-2xl font-semibold text-white font-mono">
+                {runningTasks}
+              </span>
+              <span className="text-xs text-gray-500 ml-1">running</span>
+            </div>
+            <span className="text-gray-700">·</span>
+            <div>
+              <span className="text-lg font-semibold text-emerald-400 font-mono">
+                {completedTasks}
+              </span>
+              <span className="text-xs text-gray-500 ml-1">completed</span>
             </div>
           </div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold text-white font-mono">{memories.length}</span>
-            <span className="text-xs text-muted">ADRs & Architecture</span>
-          </div>
-          <div className="mt-2 text-xs text-muted">Injected into agent context</div>
+          <Link
+            href="/tasks"
+            className="mt-2 inline-block text-[11px] text-cyan-400 hover:text-cyan-300 font-mono"
+          >
+            Inspect task queue →
+          </Link>
         </div>
 
-        {/* Tech Stack */}
-        <div className="p-5 rounded-xl bg-charcoal-900 border border-border">
+        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono text-muted uppercase">Tech Stack Modules</span>
-            <div className="w-7 h-7 rounded-lg bg-charcoal-800 border border-border flex items-center justify-center text-gray-300">
-              <FolderTree className="w-4 h-4" />
-            </div>
+            <span className="text-[11px] font-mono text-gray-400 uppercase">
+              GitHub Integration
+            </span>
+            <Github className="w-4 h-4 text-gray-300" />
           </div>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {activeProject?.tech_stack && activeProject.tech_stack.length > 0 ? (
-              activeProject.tech_stack.slice(0, 4).map((tech) => (
-                <span
-                  key={tech}
-                  className="px-2 py-0.5 rounded bg-charcoal-850 border border-border text-[11px] font-mono text-gray-300"
-                >
-                  {tech}
-                </span>
-              ))
-            ) : (
-              <span className="text-xs text-muted">No tech stack configured</span>
-            )}
+          <div className="mt-2.5">
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 rounded border ${
+                ghStatus?.is_connected
+                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                  : "bg-white/[0.04] text-gray-400 border-white/[0.08]"
+              }`}
+            >
+              {ghStatus?.is_connected
+                ? `Connected (@${ghStatus.github_username || "App"})`
+                : "Not Connected"}
+            </span>
           </div>
-          <div className="mt-2 text-xs text-muted">Auto-detected from repo manifests</div>
+          <Link
+            href="/github"
+            className="mt-2.5 inline-block text-[11px] text-violet-400 hover:text-violet-300 font-mono"
+          >
+            Configure repository scope →
+          </Link>
+        </div>
+
+        <div className="p-4 rounded-lg bg-[#0D111A] border border-white/[0.07]">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono text-gray-400 uppercase">
+              AI API Provider
+            </span>
+            <Sliders className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="mt-2.5">
+            <span
+              className={`inline-flex items-center gap-1.5 text-xs font-mono px-2 py-0.5 rounded border ${
+                activeProvidersCount > 0
+                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                  : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+              }`}
+            >
+              {activeProvidersCount > 0
+                ? `${activeProvidersCount} Active Gateway(s)`
+                : "No API Key Configured"}
+            </span>
+          </div>
+          <Link
+            href="/settings/providers"
+            className="mt-2.5 inline-block text-[11px] text-violet-400 hover:text-violet-300 font-mono"
+          >
+            Configure AI models →
+          </Link>
         </div>
       </div>
 
-      {/* Main Grid: Recent Tasks & Memory Highlights */}
+      {/* Main Content Columns */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column: Recent Agent Tasks */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-white flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-violet-400" />
-              <span>Recent AI Engineering Tasks</span>
-            </h2>
-            <Link href="/tasks" className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1">
-              View all tasks <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
+        {/* Left 2 Columns: Recent Tasks & Recent Code Changes */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Recent Agent Tasks */}
+          <div className="rounded-lg bg-[#0D111A] border border-white/[0.07] overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-violet-400" />
+                <span>Recent Engineering Tasks</span>
+              </h2>
+              <Link
+                href="/tasks"
+                className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1"
+              >
+                <span>View all</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
 
-          <div className="bg-charcoal-900 border border-border rounded-xl divide-y divide-border overflow-hidden">
             {tasks.length === 0 ? (
-              <div className="p-8 text-center">
-                <Bot className="w-8 h-8 text-muted mx-auto mb-2 opacity-50" />
-                <p className="text-sm text-muted">No tasks submitted yet for this project.</p>
+              <div className="p-8 text-center space-y-3">
+                <Bot className="w-7 h-7 text-gray-600 mx-auto" />
+                <div>
+                  <p className="text-xs font-medium text-white">
+                    No engineering tasks executed yet
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+                    Describe a feature, bug fix, or refactoring task. The AI Engineer will inspect your repository, propose a structured plan, and await your approval.
+                  </p>
+                </div>
                 <Link
                   href="/engineer"
-                  className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-medium text-white transition-all shadow-glow"
+                  className="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-md bg-violet-600 hover:bg-violet-500 text-xs font-medium text-white"
                 >
-                  Submit First Task
+                  <span>Start an AI Engineering Task</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             ) : (
-              tasks.slice(0, 5).map((t) => {
-                const isRunning = t.status === "running" || t.status === "planning";
-                const isDone = t.status === "completed";
-                const isAwaiting = t.status === "awaiting_approval";
+              <div className="divide-y divide-white/[0.06]">
+                {tasks.slice(0, 5).map((t) => {
+                  const isRunning =
+                    t.status === "running" || t.status === "planning" || t.status === "testing";
+                  const isDone = t.status === "completed";
+                  const isAwaiting = t.status === "awaiting_approval";
 
-                return (
-                  <div key={t.id} className="p-4 hover:bg-charcoal-850/60 transition-colors flex items-center justify-between gap-4">
-                    <div className="truncate">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase ${
-                            isDone
-                              ? "bg-emerald-950/60 text-emerald-400 border border-emerald-800/40"
-                              : isRunning
-                              ? "bg-violet-950/60 text-violet-300 border border-violet-800/40 animate-pulse"
-                              : isAwaiting
-                              ? "bg-amber-950/60 text-amber-400 border border-amber-800/40"
-                              : "bg-charcoal-800 text-muted border border-border"
-                          }`}
+                  return (
+                    <div
+                      key={t.id}
+                      className="p-4 hover:bg-white/[0.015] transition-colors flex items-center justify-between gap-4"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase border ${
+                              isDone
+                                ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                                : isRunning
+                                ? "bg-violet-500/15 text-violet-300 border-violet-500/30"
+                                : isAwaiting
+                                ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                                : "bg-white/[0.04] text-gray-400 border-white/[0.08]"
+                            }`}
+                          >
+                            {isRunning ? (
+                              <Clock className="w-3 h-3" />
+                            ) : isDone ? (
+                              <CheckCircle2 className="w-3 h-3" />
+                            ) : (
+                              <AlertCircle className="w-3 h-3" />
+                            )}
+                            {t.status.replace("_", " ")}
+                          </span>
+                          <span className="text-[10px] font-mono text-gray-500 uppercase">
+                            [{t.priority}]
+                          </span>
+                        </div>
+                        <Link
+                          href="/tasks"
+                          className="text-xs sm:text-sm font-medium text-white hover:text-violet-300 truncate block"
                         >
-                          {isRunning ? <Clock className="w-3 h-3" /> : isDone ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                          {t.status.replace("_", " ")}
-                        </span>
-                        <span className="text-[11px] font-mono text-muted uppercase">[{t.priority}]</span>
+                          {t.title}
+                        </Link>
+                        <p className="text-xs text-gray-500 truncate mt-0.5">
+                          {t.description}
+                        </p>
                       </div>
-                      <Link href={`/tasks`} className="text-sm font-medium text-white hover:text-violet-400 truncate block">
-                        {t.title}
-                      </Link>
-                      <span className="text-xs text-muted truncate block mt-0.5">{t.description}</span>
-                    </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
-                      {t.diff_summary && (
-                        <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-charcoal-800 text-cyan-400 border border-border">
-                          Diff Ready
-                        </span>
-                      )}
-                      {t.pr_url && (
-                        <a
-                          href={t.pr_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-[11px] font-mono px-2 py-0.5 rounded bg-violet-950/80 text-violet-300 border border-violet-800/40 flex items-center gap-1 hover:text-white"
-                        >
-                          <GitPullRequest className="w-3 h-3" /> PR #{t.pr_number}
-                        </a>
-                      )}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {t.diff_summary && (
+                          <Link
+                            href="/reviews"
+                            className="text-[11px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/25"
+                          >
+                            Review Diff
+                          </Link>
+                        )}
+                        {t.pr_url && (
+                          <a
+                            href={t.pr_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[11px] font-mono px-2 py-0.5 rounded bg-violet-500/15 text-violet-300 border border-violet-500/30 flex items-center gap-1"
+                          >
+                            <GitPullRequest className="w-3 h-3" />
+                            <span>PR #{t.pr_number}</span>
+                          </a>
+                        )}
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Code Changes */}
+          <div className="rounded-lg bg-[#0D111A] border border-white/[0.07] overflow-hidden">
+            <div className="px-5 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-cyan-400" />
+                <span>Recent Code Changes &amp; Pull Requests</span>
+              </h2>
+              <Link
+                href="/reviews"
+                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+              >
+                <span>Open Code Reviews</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {tasksWithChanges.length === 0 ? (
+              <div className="p-6 text-center text-xs text-gray-500">
+                No code diffs or pull requests have been generated for this project yet.
+              </div>
+            ) : (
+              <div className="divide-y divide-white/[0.06]">
+                {tasksWithChanges.slice(0, 4).map((t) => (
+                  <div
+                    key={t.id}
+                    className="p-4 flex items-center justify-between gap-4"
+                  >
+                    <div className="min-w-0">
+                      <span className="text-xs font-medium text-white block truncate">
+                        {t.title}
+                      </span>
+                      <span className="text-[11px] font-mono text-gray-500">
+                        Branch: {t.created_branch || t.target_branch}
+                      </span>
+                    </div>
+                    <Link
+                      href="/reviews"
+                      className="h-7 px-2.5 rounded bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs text-gray-200 shrink-0 flex items-center gap-1"
+                    >
+                      <span>Inspect Diff</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
                   </div>
-                );
-              })
+                ))}
+              </div>
             )}
           </div>
         </div>
 
         {/* Right Column: Engineering Memory & Audit Stream */}
         <div className="space-y-6">
-          {/* Engineering Memory Card */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-white flex items-center gap-2">
+          {/* Engineering Memory */}
+          <div className="rounded-lg bg-[#0D111A] border border-white/[0.07] overflow-hidden">
+            <div className="px-4 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Brain className="w-4 h-4 text-cyan-400" />
-                <span>Engineering Memory</span>
+                <span>Engineering Memory ({memories.length})</span>
               </h2>
-              <Link href="/memory" className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1">
-                Explore <ArrowRight className="w-3 h-3" />
+              <Link
+                href="/memory"
+                className="text-xs text-cyan-400 hover:text-cyan-300"
+              >
+                Explore →
               </Link>
             </div>
-
-            <div className="bg-charcoal-900 border border-border rounded-xl p-4 divide-y divide-border">
+            <div className="p-4 divide-y divide-white/[0.06]">
               {memories.length === 0 ? (
-                <p className="text-xs text-muted text-center py-4">No architectural memories recorded yet.</p>
+                <p className="text-xs text-gray-500 text-center py-4">
+                  No architectural memories recorded yet.
+                </p>
               ) : (
                 memories.slice(0, 3).map((m) => (
                   <div key={m.id} className="py-2.5 first:pt-0 last:pb-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="px-1.5 py-0.5 rounded bg-charcoal-850 text-cyan-300 text-[10px] font-mono uppercase border border-border">
+                      <span className="px-1.5 py-0.5 rounded bg-white/[0.04] text-cyan-300 text-[10px] font-mono uppercase border border-white/[0.06]">
                         {m.category}
                       </span>
-                      <span className="text-xs font-semibold text-white truncate">{m.title}</span>
+                      <span className="text-xs font-medium text-white truncate">
+                        {m.title}
+                      </span>
                     </div>
-                    <p className="text-xs text-muted line-clamp-2">{m.summary || m.content}</p>
+                    <p className="text-xs text-gray-400 line-clamp-2">
+                      {m.summary || m.content}
+                    </p>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          {/* Activity Log Preview */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold text-white flex items-center gap-2">
+          {/* Recent Activity */}
+          <div className="rounded-lg bg-[#0D111A] border border-white/[0.07] overflow-hidden">
+            <div className="px-4 py-3.5 border-b border-white/[0.06] flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gray-400" />
-                <span>Recent Platform Activity</span>
+                <span>Recent Activity</span>
               </h2>
-              <Link href="/activity" className="text-xs text-muted hover:text-white flex items-center gap-1">
-                Full Log <ArrowRight className="w-3 h-3" />
+              <Link
+                href="/activity"
+                className="text-xs text-gray-400 hover:text-white"
+              >
+                Full log →
               </Link>
             </div>
-
-            <div className="bg-charcoal-900 border border-border rounded-xl p-4 space-y-3">
+            <div className="p-4 space-y-3">
               {activities.length === 0 ? (
-                <p className="text-xs text-muted text-center py-4">No recent activity recorded.</p>
+                <p className="text-xs text-gray-500 text-center py-4">
+                  No recent activity recorded.
+                </p>
               ) : (
-                activities.slice(0, 4).map((a) => (
+                activities.slice(0, 5).map((a) => (
                   <div key={a.id} className="flex items-start gap-2.5 text-xs">
                     <span className="w-1.5 h-1.5 rounded-full bg-violet-400 mt-1.5 shrink-0" />
                     <div>
                       <p className="text-gray-300 leading-snug">{a.description}</p>
-                      <span className="text-[10px] font-mono text-muted">
-                        {new Date(a.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      <span className="text-[10px] font-mono text-gray-500">
+                        {new Date(a.created_at).toLocaleString()}
                       </span>
                     </div>
                   </div>

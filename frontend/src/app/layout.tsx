@@ -5,6 +5,11 @@ import { AuthProvider } from "@/lib/auth-context";
 export const metadata: Metadata = {
   title: "JGitLab — Autonomous AI Software Engineering Platform",
   description: "One intelligent platform to build, understand, and evolve AI-powered software.",
+  icons: {
+    icon: "/jgitlab-logo.jpg",
+    shortcut: "/jgitlab-logo.jpg",
+    apple: "/jgitlab-logo.jpg",
+  },
 };
 
 export default function RootLayout({

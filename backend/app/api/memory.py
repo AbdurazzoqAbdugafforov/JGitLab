@@ -1,17 +1,17 @@
 from typing import List, Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_
+from sqlalchemy import select
 
 from app.core.database import get_db
 from app.models.memory import MemoryRecord
 from app.models.activity import ActivityLog
 from app.schemas.memory import (
-    MemoryRecordCreate, MemoryRecordUpdate, MemoryRecordResponse, MemorySearchQuery
+    MemoryRecordCreate, MemoryRecordResponse, MemorySearchQuery
 )
 from app.services.memory.service import EngineeringMemoryService
 from app.services.ai.factory import get_ai_provider_for_project
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, verify_project_access
 from app.models.user import User
 
 router = APIRouter(prefix="/memory", tags=["Engineering Memory"])
@@ -23,6 +23,7 @@ async def list_memories(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
+    await verify_project_access(project_id, db, current_user)
     stmt = select(MemoryRecord).where(MemoryRecord.project_id == project_id)
     if category:
         stmt = stmt.where(MemoryRecord.category == category)
@@ -35,7 +36,7 @@ async def create_memory(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
-    # Optional provider for embedding
+    await verify_project_access(mem_in.project_id, db, current_user)
     provider = None
     try:
         provider = await get_ai_provider_for_project(mem_in.project_id, current_user.id, db)
@@ -53,7 +54,6 @@ async def create_memory(
         source_task_id=mem_in.source_task_id
     )
 
-    # Activity log
     act = ActivityLog(
         project_id=mem_in.project_id,
         user_id=current_user.id,
@@ -73,6 +73,7 @@ async def search_memories(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ) -> Any:
+    await verify_project_access(query_in.project_id, db, current_user)
     provider = None
     try:
         provider = await get_ai_provider_for_project(query_in.project_id, current_user.id, db)
@@ -98,6 +99,7 @@ async def get_memory(
     record = result.scalar_one_or_none()
     if not record:
         raise HTTPException(status_code=404, detail="Memory record not found")
+    await verify_project_access(record.project_id, db, current_user)
     return record
 
 @router.delete("/{memory_id}")
@@ -110,6 +112,7 @@ async def delete_memory(
     record = result.scalar_one_or_none()
     if not record:
         raise HTTPException(status_code=404, detail="Memory record not found")
+    await verify_project_access(record.project_id, db, current_user)
 
     await db.delete(record)
     await db.commit()
