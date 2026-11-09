@@ -6,6 +6,21 @@
 
 ---
 
+## ⚡ Architecture Overview: Three Autonomous Pillars
+
+**JGitLab** is built on three core autonomous capabilities:
+
+1. **Autonomous AI Studio**  
+   A workspace-driven engineering environment where natural language prompts are transformed into step-by-step implementation plans. The platform inspects codebases, plans multi-step changes with risk evaluation, executes sandboxed modifications, runs automated tests, reviews unified diffs, and prepares pull requests—all with human-in-the-loop approval gates for code execution and destructive operations.
+
+2. **Persistent Memory**  
+   Project-scoped knowledge storage that captures architectural notes, technology stack decisions, architecture decision records (ADRs), and bug fix learnings. Hybrid semantic + keyword retrieval automatically injects relevant context into agent planning, enabling continuity and smarter decision-making across engineering tasks.
+
+3. **GitHub App Integration**  
+   Least-privilege OAuth 2.0 integration with minimal scoped permissions (`metadata: read`, `contents: write`, `pull_requests: write`, `checks: read`). Users control repository authorization via All Repositories or Selected Repositories options. Identity (Google/GitHub OAuth) is completely separate from repository access, enforcing the principle of least privilege.
+
+---
+
 ## 🏛️ Core Architecture & Pillars
 
 1. **Autonomous AI Software Engineer (Active MVP)**
