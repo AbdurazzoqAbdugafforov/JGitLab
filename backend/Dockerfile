@@ -1,23 +1,17 @@
-FROM python:3.12-slim
+FROM node:22-alpine
+
+RUN apk add --no-cache git
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+COPY package*.json ./
+RUN npm install
 
-# Install python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy backend code
 COPY . .
+RUN npm run build
 
-# Expose port
+RUN mkdir -p /app/workspaces /app/data
+
 EXPOSE 8000
 
-# Run entrypoint: migrations + seed + uvicorn
-CMD ["sh", "-c", "python seed.py && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["npm", "run", "start:prod"]

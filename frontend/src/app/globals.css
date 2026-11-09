@@ -3,41 +3,47 @@
 @tailwind utilities;
 
 :root {
-  --bg-canvas: #04060E;
-  --bg-primary: #070A16;
-  --bg-surface: #0B1022;
-  --bg-elevated: #10172E;
-  --bg-subtle: #161F3D;
+  /* Premium Obsidian & Electric Tech Blue Design Tokens (Linear + Vercel inspired) */
+  --bg-canvas: #07090E;
+  --bg-primary: #0B0E17;
+  --bg-surface: #101524;
+  --bg-elevated: #161D31;
+  --bg-subtle: #1C243B;
 
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-default: rgba(255, 255, 255, 0.11);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-accent: rgba(139, 92, 246, 0.5);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.22);
+  --border-accent: rgba(99, 102, 241, 0.6);
 
   --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
 
-  --accent-cyan: #06B6D4;
-  --accent-violet: #8B5CF6;
-  --accent-orange: #F97316;
+  --accent-brand: #6366F1;
+  --accent-blue: #3B82F6;
+  --accent-blue-hover: #60A5FA;
+  --accent-cyan: #38BDF8;
+  --accent-purple: #A855F7;
+  --accent-success: #10B981;
+  --accent-warning: #F59E0B;
+  --accent-danger: #EF4444;
 
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
 
-  --font-inter: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-inter: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 }
 
 body {
   background-color: var(--bg-canvas);
   background-image:
-    radial-gradient(900px circle at 10% 0%, rgba(139, 92, 246, 0.14), transparent 55%),
-    radial-gradient(750px circle at 90% 8%, rgba(6, 182, 212, 0.11), transparent 55%),
-    radial-gradient(700px circle at 50% 100%, rgba(249, 115, 22, 0.07), transparent 60%);
+    radial-gradient(1200px circle at 50% -10%, rgba(99, 102, 241, 0.14), transparent 60%),
+    radial-gradient(900px circle at 85% 20%, rgba(56, 189, 248, 0.08), transparent 50%),
+    radial-gradient(800px circle at 15% 70%, rgba(168, 85, 247, 0.06), transparent 50%);
   background-attachment: fixed;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-family: var(--font-inter);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
@@ -45,103 +51,97 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid rgba(6, 182, 212, 0.7);
-  outline-offset: 1px;
+  outline: 2px solid #6366F1;
+  outline-offset: 2px;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(4, 6, 14, 0.8);
+  background: #07090E;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.28);
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 9999px;
+  border: 2px solid #07090E;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.55);
+  background: rgba(255, 255, 255, 0.28);
 }
 
 pre, code {
   font-family: var(--font-mono);
 }
 
-/* Signature JGitLab Brand Utilities */
-.jgitlab-wordmark {
-  background: linear-gradient(90deg, #22D3EE 0%, #A78BFA 46%, #FB923C 78%, #F97316 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.jgitlab-gradient-border {
-  position: relative;
-}
-
-.jgitlab-btn-glow {
-  background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 45%, #EA580C 100%);
-  box-shadow: 0 8px 26px -6px rgba(139, 92, 246, 0.5), 0 0 15px -3px rgba(249, 115, 22, 0.3);
-  transition: all 180ms ease;
-}
-
-.jgitlab-btn-glow:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 32px -6px rgba(6, 182, 212, 0.45), 0 0 22px -2px rgba(249, 115, 22, 0.45);
-  filter: brightness(1.08);
-}
-
-.bg-engineering-grid {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 36px 36px;
-}
-
-.bg-hero-glow {
-  background:
-    radial-gradient(750px circle at 18% 12%, rgba(6, 182, 212, 0.13), transparent 60%),
-    radial-gradient(680px circle at 82% 18%, rgba(139, 92, 246, 0.15), transparent 60%),
-    radial-gradient(620px circle at 50% 88%, rgba(249, 115, 22, 0.09), transparent 65%);
-}
-
-.studio-panel {
-  background: linear-gradient(180deg, rgba(13, 19, 38, 0.86) 0%, rgba(8, 12, 26, 0.92) 100%);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.085);
-  box-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.75);
-}
-
+/* Glassmorphism & Modern Card Styling */
 .card-interactive {
-  background: linear-gradient(165deg, rgba(15, 22, 43, 0.88) 0%, rgba(9, 13, 28, 0.94) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.085);
-  box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.7);
-  transition: border-color 200ms ease, transform 200ms ease, box-shadow 200ms ease;
+  background: linear-gradient(180deg, rgba(22, 29, 49, 0.7) 0%, rgba(16, 21, 36, 0.8) 100%);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-interactive:hover {
-  border-color: rgba(34, 211, 238, 0.38);
-  box-shadow: 0 16px 40px -14px rgba(139, 92, 246, 0.24), 0 0 20px -8px rgba(6, 182, 212, 0.2);
+  border-color: rgba(99, 102, 241, 0.45);
+  box-shadow: 0 12px 32px -4px rgba(99, 102, 241, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.jgitlab-btn-glow {
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #3B82F6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 24px -2px rgba(99, 102, 241, 0.5);
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.jgitlab-btn-glow:hover {
+  background: linear-gradient(135deg, #818CF8 0%, #6366F1 50%, #60A5FA 100%);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 0 32px 0 rgba(99, 102, 241, 0.65);
+  transform: translateY(-1px);
+}
+
+.jgitlab-btn-neon-emerald {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35), 0 0 20px -2px rgba(16, 185, 129, 0.4);
+}
+
+.jgitlab-btn-neon-emerald:hover {
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.5), 0 0 28px 0 rgba(16, 185, 129, 0.6);
   transform: translateY(-1px);
 }
 
 .diff-add {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #86EFAC;
+  background-color: rgba(16, 185, 129, 0.16);
+  color: #34D399;
 }
 
 .diff-del {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #FCA5A5;
+  background-color: rgba(239, 68, 68, 0.16);
+  color: #F87171;
 }
 
 .diff-hdr {
-  background-color: rgba(6, 182, 212, 0.15);
-  color: #67E8F9;
+  background-color: rgba(99, 102, 241, 0.16);
+  color: #818CF8;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
 }
 
 button, a, [role="button"] {

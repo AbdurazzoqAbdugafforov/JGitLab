@@ -1,0 +1,11 @@
+{
+  "name": "jgitlab",
+  "version": "1.0.0",
+  "description": "JGitLab Autonomous AI Software Engineering Platform",
+  "scripts": {
+    "dev": "start \"Backend\" cmd /k \"cd backend && npm run start:dev\" && start \"Frontend\" cmd /k \"cd frontend && npm run dev\"",
+    "start": "start \"Backend\" cmd /k \"cd backend && npm run start:dev\" && start \"Frontend\" cmd /k \"cd frontend && npm run dev\"",
+    "run": "start \"Backend\" cmd /k \"cd backend && npm run start:dev\" && start \"Frontend\" cmd /k \"cd frontend && npm run dev\"",
+    "runqil": "start \"Backend\" cmd /k \"cd backend && npm run start:dev\" && start \"Frontend\" cmd /k \"cd frontend && npm run dev\""
+  }
+}

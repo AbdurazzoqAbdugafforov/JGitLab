@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -203,7 +203,7 @@ export default function OnboardingPage() {
       {/* Top Progress Bar */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <span className="text-[11px] font-mono uppercase tracking-wider text-violet-400">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#58A6FF]">
             Workspace Onboarding · Step {activeStep.number} of {STEPS.length}
           </span>
           <h1 className="text-xl font-semibold text-white mt-0.5">
@@ -213,7 +213,7 @@ export default function OnboardingPage() {
         <button
           type="button"
           onClick={handleSkipAll}
-          className="text-xs font-mono text-gray-400 hover:text-white px-3 py-1.5 rounded-md border border-white/[0.08] hover:border-white/[0.15] transition-colors"
+          className="text-xs font-mono text-gray-400 hover:text-white px-3 py-1.5 rounded-md border border-[#30363D] hover:border-white/[0.15] transition-colors"
         >
           Skip setup &amp; explore workspace →
         </button>
@@ -232,7 +232,7 @@ export default function OnboardingPage() {
               onClick={() => setStepIndex(idx)}
               className={`text-left p-2.5 rounded-md border transition-all ${
                 isCurrent
-                  ? "bg-violet-500/15 border-violet-500/40 text-white"
+                  ? "bg-[#1F6FEB]/15 border-[#1F6FEB]/50 text-white"
                   : isDone
                   ? "bg-[#0D111A] border-emerald-500/25 text-emerald-300"
                   : "bg-[#0A0E16] border-white/[0.06] text-gray-500 hover:text-gray-300"
@@ -255,11 +255,11 @@ export default function OnboardingPage() {
       )}
 
       {/* Step Card */}
-      <div className="rounded-lg bg-[#0D111A] border border-white/[0.08] p-6 sm:p-8 shadow-xl">
+      <div className="rounded-lg bg-[#0D111A] border border-[#30363D] p-6 sm:p-8 shadow-xl">
         {/* STEP 1 — WELCOME */}
         {activeStep.id === "welcome" && (
           <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/25 text-violet-300 text-xs">
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#1F6FEB]/15 border border-[#1F6FEB]/30 text-[#58A6FF] text-xs">
               <Sparkles className="w-3.5 h-3.5" />
               <span>AI Engineering Platform</span>
             </div>
@@ -274,21 +274,21 @@ export default function OnboardingPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
-              <div className="p-4 rounded-md bg-[#111622] border border-white/[0.06]">
+              <div className="p-4 rounded-md bg-[#161B22] border border-white/[0.06]">
                 <Github className="w-4 h-4 text-cyan-400 mb-2" />
                 <h3 className="text-xs font-semibold text-white">Scoped GitHub App</h3>
                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                   Authorize all repositories or only selected repositories under your control.
                 </p>
               </div>
-              <div className="p-4 rounded-md bg-[#111622] border border-white/[0.06]">
-                <Bot className="w-4 h-4 text-violet-400 mb-2" />
+              <div className="p-4 rounded-md bg-[#161B22] border border-white/[0.06]">
+                <Bot className="w-4 h-4 text-[#58A6FF] mb-2" />
                 <h3 className="text-xs font-semibold text-white">Plan &amp; Verify Loop</h3>
                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">
                   Inspect structured plans, approve execution, run sandbox tests, and review diffs.
                 </p>
               </div>
-              <div className="p-4 rounded-md bg-[#111622] border border-white/[0.06]">
+              <div className="p-4 rounded-md bg-[#161B22] border border-white/[0.06]">
                 <Shield className="w-4 h-4 text-emerald-400 mb-2" />
                 <h3 className="text-xs font-semibold text-white">Encrypted AI Gateway</h3>
                 <p className="text-xs text-gray-400 mt-1 leading-relaxed">
@@ -318,7 +318,7 @@ export default function OnboardingPage() {
                   type="text"
                   disabled
                   value={user?.email || ""}
-                  className="w-full h-10 px-3.5 rounded-md bg-[#090C13] border border-white/[0.07] text-xs text-gray-400 font-mono"
+                  className="w-full h-10 px-3.5 rounded-md bg-[#0D1117] border border-white/[0.07] text-xs text-gray-400 font-mono"
                 />
               </div>
               <div>
@@ -330,12 +330,12 @@ export default function OnboardingPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Lead Engineer"
-                  className="w-full h-10 px-3.5 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white focus:border-violet-500/60 focus:outline-none"
+                  className="w-full h-10 px-3.5 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white focus:border-[#58A6FF] focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="p-3.5 rounded-md bg-[#111622] border border-white/[0.06] flex items-center justify-between">
+            <div className="p-3.5 rounded-md bg-[#161B22] border border-white/[0.06] flex items-center justify-between">
               <div>
                 <span className="text-xs font-medium text-white block">
                   Connected Login Identities
@@ -348,7 +348,7 @@ export default function OnboardingPage() {
               </div>
               <Link
                 href="/settings/account"
-                className="text-xs text-violet-400 hover:text-violet-300 font-mono"
+                className="text-xs text-[#58A6FF] hover:text-[#58A6FF] font-mono"
               >
                 Manage identities →
               </Link>
@@ -369,7 +369,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div className="p-4 rounded-md bg-[#111622] border border-white/[0.08]">
+              <div className="p-4 rounded-md bg-[#161B22] border border-[#30363D]">
                 <div className="text-xs font-semibold text-white mb-1">
                   Option A — All Repositories
                 </div>
@@ -377,8 +377,8 @@ export default function OnboardingPage() {
                   Authorize all current and future public/private repositories in your chosen GitHub account or organization.
                 </p>
               </div>
-              <div className="p-4 rounded-md bg-[#111622] border border-violet-500/30">
-                <div className="text-xs font-semibold text-violet-300 mb-1">
+              <div className="p-4 rounded-md bg-[#161B22] border border-[#1F6FEB]/40">
+                <div className="text-xs font-semibold text-[#58A6FF] mb-1">
                   Option B — Selected Repositories (Recommended)
                 </div>
                 <p className="text-xs text-gray-400 leading-relaxed">
@@ -387,7 +387,7 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-md bg-[#090C13] border border-white/[0.06] text-xs space-y-2">
+            <div className="p-4 rounded-md bg-[#0D1117] border border-white/[0.06] text-xs space-y-2">
               <div className="flex items-center gap-2 text-gray-300 font-medium">
                 <Lock className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Minimal GitHub App Permissions Requested:</span>
@@ -413,7 +413,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleInstallGitHubApp}
                 disabled={installingApp}
-                className="h-10 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium flex items-center gap-2 transition-colors"
+                className="h-10 px-4 rounded-md bg-[#1F6FEB] hover:bg-[#388BFD] text-white text-xs font-medium flex items-center gap-2 transition-colors"
               >
                 {installingApp ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -466,7 +466,7 @@ export default function OnboardingPage() {
                       <select
                         value={selectedRepo}
                         onChange={(e) => setSelectedRepo(e.target.value)}
-                        className="flex-1 h-10 px-3 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white"
+                        className="flex-1 h-10 px-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white"
                       >
                         <option value="">Select a repository...</option>
                         {repos.map((r) => (
@@ -479,7 +479,7 @@ export default function OnboardingPage() {
                         type="button"
                         onClick={handleConnectSelectedRepo}
                         disabled={!selectedRepo || connectingRepo}
-                        className="h-10 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium disabled:opacity-50"
+                        className="h-10 px-4 rounded-md bg-[#1F6FEB] hover:bg-[#388BFD] text-white text-xs font-medium disabled:opacity-50"
                       >
                         {connectingRepo ? "Analyzing..." : "Connect & Analyze"}
                       </button>
@@ -488,10 +488,10 @@ export default function OnboardingPage() {
                 )}
               </div>
             ) : (
-              <div className="p-5 rounded-md bg-[#111622] border border-white/[0.07] text-xs text-gray-400 space-y-3">
+              <div className="p-5 rounded-md bg-[#161B22] border border-white/[0.07] text-xs text-gray-400 space-y-3">
                 <p>
                   No GitHub App installation is connected yet. You can connect GitHub anytime from the{" "}
-                  <Link href="/github" className="text-violet-400 underline">
+                  <Link href="/github" className="text-[#58A6FF] underline">
                     GitHub Integration
                   </Link>{" "}
                   page or skip this step for now.
@@ -527,7 +527,7 @@ export default function OnboardingPage() {
                   type="text"
                   value={providerName}
                   onChange={(e) => setProviderName(e.target.value)}
-                  className="w-full h-9 px-3 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white"
+                  className="w-full h-9 px-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white"
                 />
               </div>
               <div>
@@ -536,7 +536,7 @@ export default function OnboardingPage() {
                   type="text"
                   value={modelName}
                   onChange={(e) => setModelName(e.target.value)}
-                  className="w-full h-9 px-3 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white font-mono"
+                  className="w-full h-9 px-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white font-mono"
                 />
               </div>
               <div>
@@ -545,7 +545,7 @@ export default function OnboardingPage() {
                   type="url"
                   value={baseUrl}
                   onChange={(e) => setBaseUrl(e.target.value)}
-                  className="w-full h-9 px-3 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white font-mono"
+                  className="w-full h-9 px-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white font-mono"
                 />
               </div>
               <div>
@@ -557,7 +557,7 @@ export default function OnboardingPage() {
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="sk-..."
-                  className="w-full h-9 px-3 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white font-mono"
+                  className="w-full h-9 px-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white font-mono"
                 />
               </div>
             </div>
@@ -586,7 +586,7 @@ export default function OnboardingPage() {
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder={activeProject ? `Keep "${activeProject.name}"` : "Core Platform API"}
-                  className="w-full h-9 px-3 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white"
+                  className="w-full h-9 px-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white"
                 />
               </div>
               <div>
@@ -596,7 +596,7 @@ export default function OnboardingPage() {
                   value={projectDesc}
                   onChange={(e) => setProjectDesc(e.target.value)}
                   placeholder="Autonomous engineering service"
-                  className="w-full h-9 px-3 rounded-md bg-[#090C13] border border-white/[0.1] text-xs text-white"
+                  className="w-full h-9 px-3 rounded-md bg-[#0D1117] border border-[#30363D] text-xs text-white"
                 />
               </div>
             </div>
@@ -609,7 +609,7 @@ export default function OnboardingPage() {
             type="button"
             disabled={stepIndex === 0}
             onClick={() => setStepIndex((i) => Math.max(0, i - 1))}
-            className="h-9 px-3.5 rounded-md border border-white/[0.08] text-xs text-gray-300 hover:text-white flex items-center gap-1.5 disabled:opacity-40"
+            className="h-9 px-3.5 rounded-md border border-[#30363D] text-xs text-gray-300 hover:text-white flex items-center gap-1.5 disabled:opacity-40"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back</span>
@@ -621,7 +621,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleSaveAccount}
                 disabled={savingProfile}
-                className="h-9 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium flex items-center gap-1.5"
+                className="h-9 px-4 rounded-md bg-[#1F6FEB] hover:bg-[#388BFD] text-white text-xs font-medium flex items-center gap-1.5"
               >
                 <span>{savingProfile ? "Saving..." : "Save & Continue"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -631,7 +631,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleSaveProvider}
                 disabled={savingProvider}
-                className="h-9 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium flex items-center gap-1.5"
+                className="h-9 px-4 rounded-md bg-[#1F6FEB] hover:bg-[#388BFD] text-white text-xs font-medium flex items-center gap-1.5"
               >
                 <span>{apiKey.trim() ? "Save Provider & Continue" : "Skip & Continue"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -641,7 +641,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleFinishOnboarding}
                 disabled={creatingProject}
-                className="h-9 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium flex items-center gap-1.5"
+                className="h-9 px-4 rounded-md bg-[#1F6FEB] hover:bg-[#388BFD] text-white text-xs font-medium flex items-center gap-1.5"
               >
                 <span>
                   {creatingProject ? "Launching..." : "Start an AI Engineering Task"}
@@ -652,7 +652,7 @@ export default function OnboardingPage() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="h-9 px-4 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium flex items-center gap-1.5"
+                className="h-9 px-4 rounded-md bg-[#1F6FEB] hover:bg-[#388BFD] text-white text-xs font-medium flex items-center gap-1.5"
               >
                 <span>Continue</span>
                 <ArrowRight className="w-3.5 h-3.5" />

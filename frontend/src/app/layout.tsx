@@ -6,9 +6,9 @@ export const metadata: Metadata = {
   title: "JGitLab — Autonomous AI Software Engineering Platform",
   description: "One intelligent platform to build, understand, and evolve AI-powered software.",
   icons: {
-    icon: "/jgitlab-logo.jpg",
-    shortcut: "/jgitlab-logo.jpg",
-    apple: "/jgitlab-logo.jpg",
+    icon: "/jgitlab-mark.png",
+    shortcut: "/jgitlab-mark.png",
+    apple: "/jgitlab-mark.png",
   },
 };
 
@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen bg-charcoal-950 text-foreground antialiased selection:bg-violet-600 selection:text-white">
+      <body className="min-h-screen bg-[#0A0D14] text-foreground antialiased selection:bg-[#1F6FEB] selection:text-white">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -12,44 +12,82 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        // GitHub / Stripe Deep Slate palette
+        slate: {
+          950: "#0A0D14", // Deepest canvas
+          900: "#0D1117", // Primary surface
+          850: "#161B22", // Card / Panel
+          800: "#1F242C", // Hover / Active panel
+          750: "#262C36", // Border subtle
+          700: "#30363D", // Border default
+          600: "#484F58", // Border strong
+          500: "#6E7681", // Muted
+          400: "#8B949E", // Secondary text
+          300: "#C9D1D9", // Primary body text
+          200: "#E6EDF3",
+          100: "#F0F6FC", // Crisp white heading
+        },
+        // Backward-compatibility aliases
         charcoal: {
-          950: "#04060E",
-          900: "#090E1E",
-          850: "#0E152C",
-          800: "#141D3B",
-          700: "#1C284F",
-          600: "#273668",
-          500: "#354885",
+          950: "#0A0D14",
+          900: "#0D1117",
+          850: "#161B22",
+          800: "#1F242C",
+          700: "#30363D",
+          600: "#484F58",
+          500: "#6E7681",
         },
-        violet: {
-          DEFAULT: "#8B5CF6",
-          50: "#F5F3FF",
-          100: "#EDE9FE",
-          200: "#DDD6FE",
-          300: "#C4B5FD",
-          400: "#A78BFA",
-          500: "#8B5CF6",
-          600: "#7C3AED",
-          700: "#6D28D9",
-          800: "#5B21B6",
-          900: "#4C1D95",
+        obsidian: {
+          950: "#0A0D14",
+          900: "#0D1117",
+          850: "#161B22",
+          800: "#1F242C",
+          750: "#262C36",
+          700: "#30363D",
+          600: "#484F58",
+          500: "#6E7681",
         },
-        cyan: {
-          DEFAULT: "#06B6D4",
-          400: "#22D3EE",
-          500: "#06B6D4",
-          600: "#0891B2",
+        // Royal Tech Blue (GitHub / Stripe Accent)
+        brand: {
+          DEFAULT: "#1F6FEB",
+          50: "#EFF6FF",
+          100: "#DBEAFE",
+          200: "#BFDBFE",
+          300: "#93C5FD",
+          400: "#60A5FA",
+          500: "#388BFD",
+          600: "#1F6FEB",
+          700: "#1A56DB",
+          800: "#1E429F",
+          900: "#1E3A8A",
         },
-        border: "rgba(255, 255, 255, 0.08)",
-        muted: "rgba(255, 255, 255, 0.45)",
+        blue: {
+          DEFAULT: "#1F6FEB",
+          50: "#EFF6FF",
+          100: "#DBEAFE",
+          200: "#BFDBFE",
+          300: "#93C5FD",
+          400: "#60A5FA",
+          500: "#388BFD",
+          600: "#1F6FEB",
+          700: "#1A56DB",
+          800: "#1E429F",
+          900: "#1E3A8A",
+        },
+        border: "#30363D",
+        muted: "#8B949E",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
+        sans: ["var(--font-inter)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       boxShadow: {
-        glow: "0 0 20px -5px rgba(139, 92, 246, 0.35)",
-        cyanGlow: "0 0 20px -5px rgba(6, 182, 212, 0.35)",
+        glow: "0 0 20px -4px rgba(31, 111, 235, 0.35)",
+        blueGlow: "0 0 24px -4px rgba(31, 111, 235, 0.45)",
+        subtle: "0 1px 2px 0 rgba(0, 0, 0, 0.4)",
+        card: "0 8px 24px -4px rgba(0, 0, 0, 0.55)",
+        stripe: "0 2px 5px rgba(0,0,0,0.4), 0 10px 25px rgba(0,0,0,0.3)",
+        btn: "0 1px 2px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)",
       }
     },
   },

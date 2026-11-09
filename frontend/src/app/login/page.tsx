@@ -1,333 +1,327 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useAuth } from "@/lib/auth-context";
 import { api, getOAuthStartUrl } from "@/lib/api";
-import { AuthProvidersStatus } from "@/lib/types";
+import { useAuth } from "@/lib/auth-context";
 import {
   AuthSplitShell,
-  GoogleLogo,
-  GitHubLogo,
-  OAUTH_ERROR_MESSAGES,
   OAuthSetupModal,
+  OAUTH_ERROR_MESSAGES,
 } from "@/components/auth/AuthSplitShell";
 import {
-  Eye,
-  EyeOff,
-  Loader2,
   AlertCircle,
   ArrowRight,
+  Eye,
+  EyeOff,
+  Settings2,
   Mail,
-  ShieldCheck,
+  Lock,
+  Shield,
+  Terminal,
+  Zap,
 } from "lucide-react";
+import { JGitLabRefreshIcon } from "@/components/brand/JGitLabBrand";
 
-function LoginContent() {
-  const { user, login } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
+function LoginFormContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showEmailForm, setShowEmailForm] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [errorTitle, setErrorTitle] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [oauthRedirecting, setOauthRedirecting] = useState<"google" | "github" | null>(null);
-  const [providers, setProviders] = useState<AuthProvidersStatus | null>(null);
-  const [setupModalProvider, setSetupModalProvider] = useState<"google" | "github" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+  const [providers, setProviders] = useState<{ google: boolean; github: boolean }>({
+    google: false,
+    github: false,
+  });
+  const [setupProvider, setSetupProvider] = useState<"google" | "github" | null>(null);
 
-  const nextPath = searchParams.get("next") || "/dashboard";
-
-  useEffect(() => {
-    if (user) {
-      router.replace(nextPath);
-    }
-  }, [user, router, nextPath]);
-
-  useEffect(() => {
-    api
-      .getAuthProviders()
-      .then(setProviders)
-      .catch(() => {});
-  }, []);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login } = useAuth();
 
   useEffect(() => {
     const authError = searchParams.get("auth_error") || searchParams.get("error");
-    const authDesc = searchParams.get("auth_error_description");
-    if (authError === "google_not_configured") {
-      setSetupModalProvider("google");
-    } else if (authError === "github_not_configured") {
-      setSetupModalProvider("github");
-    } else if (authError) {
+    const authDesc = searchParams.get("auth_error_description") || searchParams.get("error_description");
+    if (authError) {
       const mapped = OAUTH_ERROR_MESSAGES[authError];
-      setErrorTitle(mapped?.title || "Authentication Error");
-      setError(mapped?.detail || authDesc || "Unable to complete sign-in. Please try again.");
+      setError(mapped?.detail || authDesc || `Authentication failed (${authError}). Please try again.`);
     }
+    api
+      .getAuthProviders()
+      .then((res) =>
+        setProviders({
+          google: Boolean(res.google_enabled),
+          github: Boolean(res.github_enabled),
+        })
+      )
+      .catch(() => {});
   }, [searchParams]);
 
-  const handleOAuthLogin = (provider: "google" | "github") => {
-    setError(null);
-    setErrorTitle(null);
-    if (providers && ((provider === "google" && !providers.google_enabled) || (provider === "github" && !providers.github_enabled))) {
-      setSetupModalProvider(provider);
-      return;
-    }
-    setOauthRedirecting(provider);
-    window.location.href = getOAuthStartUrl(provider, {
-      intent: "login",
-      next: nextPath,
-    });
-  };
-
-  const handleInstantDemoLogin = async () => {
-    await login("admin@jgitlab.local", "JGitLab2026!Admin");
-    setSetupModalProvider(null);
-    router.push(nextPath);
-  };
-
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setErrorTitle(null);
-
-    if (!email.trim() || !password) {
-      setError("Please enter both your email address and password.");
-      return;
-    }
-
     setSubmitting(true);
+    setError(null);
+
     try {
       await login(email.trim(), password);
-      router.push(nextPath);
+      router.push("/dashboard");
     } catch (err: any) {
-      setErrorTitle("Sign-in failed");
-      setError(err.message || "Invalid email or password.");
+      setError(err.message || "Invalid email or password. Please verify your credentials.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const fillDemoCredentials = () => {
-    setShowEmailForm(true);
-    setEmail("admin@jgitlab.local");
-    setPassword("JGitLab2026!Admin");
+  const handleOAuthLogin = (provider: "google" | "github") => {
+    if (!providers[provider]) {
+      setSetupProvider(provider);
+      return;
+    }
+    setOauthLoading(provider);
     setError(null);
-    setErrorTitle(null);
+    window.location.href = getOAuthStartUrl(provider, { intent: "login", next: "/dashboard" });
   };
 
   return (
-    <AuthSplitShell>
-      <div>
-        <div className="mb-7">
-          <h2 className="text-2xl font-semibold tracking-tight text-white">
-            Sign in to JGitLab
-          </h2>
-          <p className="mt-1.5 text-sm text-gray-400">
-            Authenticate with your identity provider or workspace credentials.
-          </p>
-        </div>
-
-        {/* Error / Status Banner */}
+    <AuthSplitShell
+      mode="login"
+      title="Welcome back, Engineer"
+      subtitle="Sign in with your identity provider or workspace credentials."
+      footerText="New to JGitLab?"
+      footerLinkText="Create an account"
+      footerLinkHref="/register"
+    >
+      <div className="space-y-5">
         {error && (
           <div
             role="alert"
-            className="mb-5 p-3.5 rounded-md bg-red-500/[0.08] border border-red-500/30 text-red-200 text-xs flex items-start gap-2.5"
+            className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-start space-x-2.5 text-red-300 text-xs"
           >
             <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-            <div className="space-y-0.5">
-              {errorTitle && <p className="font-semibold text-red-300">{errorTitle}</p>}
-              <p className="text-red-200/90 leading-relaxed">{error}</p>
+            <div className="flex-1">
+              <p className="font-medium leading-relaxed">{error}</p>
             </div>
           </div>
         )}
 
-        {/* Required OAuth Authentication Buttons */}
-        <div className="space-y-2.5">
+        {/* OAuth 2.0 Providers (Google & GitHub) */}
+        <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => handleOAuthLogin("google")}
-            disabled={oauthRedirecting !== null || submitting}
-            className="w-full h-10 px-4 rounded-md bg-[#121723] hover:bg-[#171E2E] border border-white/[0.09] hover:border-white/[0.16] text-sm font-medium text-white flex items-center justify-center gap-3 transition-all disabled:opacity-60"
+            disabled={oauthLoading !== null || submitting}
+            className="w-full py-2 px-3 bg-[#161B22] hover:bg-[#21262D] border border-[#30363D] hover:border-[#8B949E] rounded-md text-[#F0F6FC] text-xs font-medium flex items-center justify-between transition-all disabled:opacity-50"
           >
-            {oauthRedirecting === "google" ? (
-              <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+            <div className="flex items-center space-x-2">
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              <span>{oauthLoading === "google" ? "Redirecting..." : "Google"}</span>
+            </div>
+            {providers.google ? (
+              <span className="w-2 h-2 rounded-full bg-[#3FB950]" title="Google OAuth Ready" />
             ) : (
-              <GoogleLogo className="w-4 h-4" />
-            )}
-            <span>Continue with Google</span>
-            {providers && !providers.google_enabled && (
-              <span className="ml-auto text-[10px] font-mono text-amber-400/90 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-                Setup Needed
-              </span>
+              <Settings2 className="w-3.5 h-3.5 text-[#58A6FF]" />
             )}
           </button>
 
           <button
             type="button"
             onClick={() => handleOAuthLogin("github")}
-            disabled={oauthRedirecting !== null || submitting}
-            className="w-full h-10 px-4 rounded-md bg-[#121723] hover:bg-[#171E2E] border border-white/[0.09] hover:border-white/[0.16] text-sm font-medium text-white flex items-center justify-center gap-3 transition-all disabled:opacity-60"
+            disabled={oauthLoading !== null || submitting}
+            className="w-full py-2 px-3 bg-[#161B22] hover:bg-[#21262D] border border-[#30363D] hover:border-[#8B949E] rounded-md text-[#F0F6FC] text-xs font-medium flex items-center justify-between transition-all disabled:opacity-50"
           >
-            {oauthRedirecting === "github" ? (
-              <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
+            <div className="flex items-center space-x-2">
+              <svg className="w-4 h-4 fill-white shrink-0" viewBox="0 0 24 24">
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                />
+              </svg>
+              <span>{oauthLoading === "github" ? "Redirecting..." : "GitHub"}</span>
+            </div>
+            {providers.github ? (
+              <span className="w-2 h-2 rounded-full bg-[#3FB950]" title="GitHub OAuth Ready" />
             ) : (
-              <GitHubLogo className="w-4 h-4 text-white" />
-            )}
-            <span>Continue with GitHub</span>
-            {providers && !providers.github_enabled && (
-              <span className="ml-auto text-[10px] font-mono text-amber-400/90 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-                Setup Needed
-              </span>
+              <Settings2 className="w-3.5 h-3.5 text-[#58A6FF]" />
             )}
           </button>
         </div>
 
         {/* Divider */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/[0.07]" />
-          </div>
-          <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
-            <button
-              type="button"
-              onClick={() => setShowEmailForm((v) => !v)}
-              className="bg-[#06080D] px-3 text-gray-500 hover:text-gray-300 font-mono flex items-center gap-1.5 transition-colors"
-            >
-              <Mail className="w-3 h-3" />
-              <span>Continue with Email</span>
-            </button>
-          </div>
+        <div className="relative flex items-center py-0.5">
+          <div className="flex-grow border-t border-[#30363D]" />
+          <span className="flex-shrink mx-3 text-[10px] font-mono uppercase tracking-wider text-[#8B949E]">
+            or sign in with email
+          </span>
+          <div className="flex-grow border-t border-[#30363D]" />
         </div>
 
         {/* Email & Password Form */}
-        {showEmailForm && (
-          <form onSubmit={handleEmailSubmit} className="space-y-4" noValidate>
-            <div>
-              <label
-                htmlFor="login-email"
-                className="block text-xs font-medium text-gray-300 mb-1.5"
-              >
-                Email address
-              </label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="login-email"
+              className="block text-[11px] font-mono uppercase tracking-wider text-[#8B949E] mb-1.5"
+            >
+              Work Email
+            </label>
+            <div className="relative">
+              <Mail className="w-4 h-4 text-[#8B949E] absolute left-3 top-2.5 pointer-events-none" />
               <input
                 id="login-email"
                 type="email"
-                autoComplete="email"
                 required
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                className="w-full h-10 px-3.5 rounded-md bg-[#0C1018] border border-white/[0.09] focus:border-violet-500/60 text-sm text-white placeholder:text-gray-600 focus:outline-none transition-colors"
+                placeholder="architect@company.com"
+                className="w-full pl-9 pr-4 py-2 rounded-md bg-[#0D1117] border border-[#30363D] focus:border-[#58A6FF] focus:outline-none text-sm text-[#F0F6FC] placeholder-[#6E7681] transition-all font-mono"
               />
             </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label
-                  htmlFor="login-password"
-                  className="block text-xs font-medium text-gray-300"
-                >
-                  Password
-                </label>
-                <button
-                  type="button"
-                  onClick={fillDemoCredentials}
-                  className="text-[11px] font-mono text-violet-400 hover:text-violet-300 transition-colors"
-                >
-                  Use Demo Architect Account
-                </button>
-              </div>
-              <div className="relative">
-                <input
-                  id="login-password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full h-10 pl-3.5 pr-10 rounded-md bg-[#0C1018] border border-white/[0.09] focus:border-violet-500/60 text-sm text-white placeholder:text-gray-600 focus:outline-none transition-colors"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 p-1"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting || oauthRedirecting !== null}
-              className="w-full h-10 rounded-md bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-60"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Authenticating...</span>
-                </>
-              ) : (
-                <>
-                  <span>Sign in with Email</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* Security Note & Registration Link */}
-        <div className="mt-6 pt-5 border-t border-white/[0.06] space-y-3">
-          <div className="flex items-start gap-2 text-[11px] text-gray-500 leading-relaxed">
-            <ShieldCheck className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
-            <span>
-              Signing in with GitHub authenticates your identity only. Repository access is configured separately via the GitHub App.
-            </span>
           </div>
 
-          <p className="text-xs text-gray-400 text-center pt-1">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
-            >
-              Create an engineering account
-            </Link>
-          </p>
-        </div>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label
+                htmlFor="login-password"
+                className="block text-[11px] font-mono uppercase tracking-wider text-[#8B949E]"
+              >
+                Password
+              </label>
+            </div>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-[#8B949E] absolute left-3 top-2.5 pointer-events-none" />
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                className="w-full pl-9 pr-10 py-2 rounded-md bg-[#0D1117] border border-[#30363D] focus:border-[#58A6FF] focus:outline-none text-sm text-[#F0F6FC] placeholder-[#6E7681] transition-all font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-2 text-[#8B949E] hover:text-[#F0F6FC] transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
 
-        <OAuthSetupModal
-          provider={setupModalProvider}
-          nextPath={nextPath}
-          onClose={() => setSetupModalProvider(null)}
-          onConfigured={(updated) => setProviders(updated)}
-          onInstantDemoLogin={handleInstantDemoLogin}
-        />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-2.5 px-4 jgitlab-btn-glow disabled:opacity-50 text-white font-semibold rounded-md flex items-center justify-center space-x-2 transition-all text-sm shadow-sm"
+          >
+            {submitting ? (
+              <JGitLabRefreshIcon size="xs" spinning={true} />
+            ) : null}
+            <span>
+              {submitting
+                ? "Authenticating Session..."
+                : "Sign In to Engineering Workspace"}
+            </span>
+            {submitting ? null : (
+              <ArrowRight className="w-4 h-4" />
+            )}
+          </button>
+        </form>
+
+        {/* Demo Credentials Quick-Fill for Evaluators / Judges */}
+        <div className="pt-3 border-t border-[#30363D]/70 space-y-2">
+          <div className="flex items-center justify-between text-[11px] font-mono text-[#8B949E]">
+            <span className="uppercase tracking-wider">Evaluation Credentials</span>
+            <span className="text-[#3FB950] font-semibold">1-Click Auto-Fill</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail("abdurazzoqabdugafforov54@gmail.com");
+                setPassword("Admin12345!");
+              }}
+              className="p-2.5 rounded-lg bg-[#161B22] hover:bg-[#21262D] border border-[#30363D] hover:border-[#A371F7] text-left transition-all group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-[#F0F6FC] group-hover:text-[#A371F7]">
+                  Lead Architect
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#A371F7]/15 text-[#D2A8FF]">
+                  ADMIN
+                </span>
+              </div>
+              <div className="text-[10px] font-mono text-[#8B949E] truncate">
+                abdurazzoq...
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEmail("engineer@jgitlab.local");
+                setPassword("Admin12345!");
+              }}
+              className="p-2.5 rounded-lg bg-[#161B22] hover:bg-[#21262D] border border-[#30363D] hover:border-[#58A6FF] text-left transition-all group"
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-bold text-[#F0F6FC] group-hover:text-[#58A6FF]">
+                  Platform Engineer
+                </span>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-[#1F6FEB]/15 text-[#58A6FF]">
+                  DEV
+                </span>
+              </div>
+              <div className="text-[10px] font-mono text-[#8B949E] truncate">
+                engineer@jgitlab.local
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
+
+      <OAuthSetupModal
+        provider={setupProvider}
+        onClose={() => setSetupProvider(null)}
+        onConfigured={() => {
+          const target = setupProvider;
+          setSetupProvider(null);
+          if (target) {
+            setProviders((prev) => ({ ...prev, [target]: true }));
+            window.location.href = getOAuthStartUrl(target, { intent: "login", next: "/dashboard" });
+          }
+        }}
+      />
     </AuthSplitShell>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#06080D] flex items-center justify-center">
-          <Loader2 className="w-6 h-6 text-violet-400 animate-spin" />
-        </div>
-      }
-    >
-      <LoginContent />
+    <Suspense fallback={<div className="min-h-screen bg-[#060911]" />}>
+      <LoginFormContent />
     </Suspense>
   );
 }

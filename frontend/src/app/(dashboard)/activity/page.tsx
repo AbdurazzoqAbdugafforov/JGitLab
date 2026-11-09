@@ -15,6 +15,7 @@ import {
   RefreshCw,
   ShieldCheck,
 } from "lucide-react";
+import { JGitLabRefreshIcon } from "@/components/brand/JGitLabBrand";
 
 const ENTITY_FILTERS = [
   { id: "all", label: "All Events" },
@@ -51,7 +52,7 @@ export default function ActivityLogsPage() {
   const getEntityIcon = (type: string) => {
     switch (type) {
       case "project":
-        return <FolderGit2 className="w-4 h-4 text-violet-400" />;
+        return <FolderGit2 className="w-4 h-4 text-[#58A6FF]" />;
       case "task":
         return <Terminal className="w-4 h-4 text-cyan-400" />;
       case "memory":
@@ -81,7 +82,7 @@ export default function ActivityLogsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.07]">
         <div>
           <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <History className="w-5 h-5 text-violet-400" />
+            <History className="w-5 h-5 text-[#58A6FF]" />
             <span>Audit Trail &amp; Activity Logs</span>
           </h1>
           <p className="text-xs text-gray-400 mt-0.5">
@@ -92,9 +93,9 @@ export default function ActivityLogsPage() {
         <button
           type="button"
           onClick={loadLogs}
-          className="h-9 px-3.5 rounded-lg bg-[#0E131D] hover:bg-[#141B29] border border-white/[0.08] text-xs text-gray-300 hover:text-white flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+          className="h-9 px-3.5 rounded-lg bg-[#161B22] hover:bg-[#21262D] border border-[#30363D] text-xs text-[#C9D1D9] hover:text-white flex items-center gap-1.5 transition-colors self-start sm:self-auto"
         >
-          <RefreshCw className={`w-3.5 h-3.5 text-cyan-400 ${loading ? "animate-spin" : ""}`} />
+          <JGitLabRefreshIcon size="sm" spinning={loading} />
           <span>Refresh Logs</span>
         </button>
       </div>
@@ -109,7 +110,7 @@ export default function ActivityLogsPage() {
               onClick={() => setEntityFilter(f.id)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 entityFilter === f.id
-                  ? "bg-violet-600 text-white"
+                  ? "bg-[#1F6FEB] text-white"
                   : "bg-white/[0.03] text-gray-400 hover:text-white hover:bg-white/[0.07]"
               }`}
             >
@@ -125,7 +126,7 @@ export default function ActivityLogsPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter audit trail..."
-            className="w-full h-8 pl-8 pr-3 rounded-lg bg-[#070A10] border border-white/[0.08] text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-violet-500/60"
+            className="w-full h-8 pl-8 pr-3 rounded-lg bg-[#0A0D14] border border-[#30363D] text-xs text-white placeholder:text-gray-500 focus:outline-none focus:border-[#58A6FF]"
           />
         </div>
       </div>
@@ -146,7 +147,7 @@ export default function ActivityLogsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 uppercase border border-violet-500/25">
+                  <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#1F6FEB]/15 text-[#58A6FF] uppercase border border-[#1F6FEB]/30">
                     {log.action_type}
                   </span>
                   <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-white/[0.04] text-gray-400 uppercase">
