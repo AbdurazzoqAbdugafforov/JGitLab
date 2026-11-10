@@ -174,8 +174,31 @@ export class WebSocketService implements OnModuleDestroy {
   }
 
   onModuleDestroy() {
+    for (const ws of Array.from(this.globalConnections)) {
+      try {
+        ws.terminate();
+      } catch {}
+    }
+    this.globalConnections.clear();
+
+    for (const set of this.activeTaskConnections.values()) {
+      for (const ws of Array.from(set)) {
+        try {
+          ws.terminate();
+        } catch {}
+      }
+    }
+    this.activeTaskConnections.clear();
+
     if (this.wss) {
-      this.wss.close();
+      try {
+        this.wss.clients.forEach((c) => {
+          try {
+            c.terminate();
+          } catch {}
+        });
+        this.wss.close();
+      } catch {}
       this.wss = null;
     }
   }

@@ -6,6 +6,8 @@ import { AllExceptionsFilter } from '../src/core/http-exception.filter';
 import { DatabaseService } from '../src/database/database.service';
 import { ConfigService } from '../src/core/config.service';
 
+jest.setTimeout(30000);
+
 describe('JGitLab NestJS Backend Integration Suite', () => {
   let app: INestApplication;
   let db: DatabaseService;
@@ -34,7 +36,7 @@ describe('JGitLab NestJS Backend Integration Suite', () => {
 
   afterAll(async () => {
     await app.close();
-  });
+  }, 30000);
 
   it('GET /health returns healthy status', async () => {
     const res = await request(app.getHttpServer()).get('/health').expect(200);

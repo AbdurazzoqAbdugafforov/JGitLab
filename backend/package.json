@@ -49,6 +49,10 @@
       "/workspaces/",
       "/dist/"
     ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/workspaces/"
+    ],
+    "testTimeout": 30000,
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

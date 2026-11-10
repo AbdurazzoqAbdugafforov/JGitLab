@@ -24,6 +24,7 @@ backend/data/
 # Workspaces storage
 backend/workspaces/
 workspaces/
+data/
 
 # OS / Editor
 .DS_Store

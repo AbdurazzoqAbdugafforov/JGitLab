@@ -568,16 +568,22 @@ export class AgentController {
           if (ghConn) {
             const token = this.security.decryptSecret(ghConn.access_token_enc);
             pushAuthUrl = `https://oauth2:${token}@github.com/${repo.full_name}.git`;
-          } else if (repo.installation_id) {
-            try {
-              const appToken = await this.githubApp.mintInstallationToken(repo.installation_id);
-              if (appToken) {
-                pushAuthUrl = `https://x-access-token:${appToken}@github.com/${repo.full_name}.git`;
+          } else {
+            const effectiveInstallationId =
+              repo.installation_id ||
+              this.db.store.github_installations[0]?.installation_id;
+            if (effectiveInstallationId) {
+              try {
+                const appToken = await this.githubApp.mintInstallationToken(effectiveInstallationId);
+                if (appToken) {
+                  pushAuthUrl = `https://x-access-token:${appToken}@github.com/${repo.full_name}.git`;
+                }
+              } catch {
+                // Ignore app token mint error
               }
-            } catch {
-              // Ignore app token mint error
             }
-          } else if (process.env.GITHUB_TOKEN || process.env.GITHUB_PAT) {
+          }
+          if (!pushAuthUrl && (process.env.GITHUB_TOKEN || process.env.GITHUB_PAT)) {
             const fallbackToken = process.env.GITHUB_TOKEN || process.env.GITHUB_PAT;
             pushAuthUrl = `https://oauth2:${fallbackToken}@github.com/${repo.full_name}.git`;
           }

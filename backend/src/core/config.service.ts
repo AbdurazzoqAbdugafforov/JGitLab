@@ -166,7 +166,8 @@ export class ConfigService {
   get isTest(): boolean {
     return (
       this.ENVIRONMENT.toLowerCase() === 'test' ||
-      process.env.NODE_ENV === 'test'
+      process.env.NODE_ENV === 'test' ||
+      process.env.JEST_WORKER_ID !== undefined
     );
   }
 
